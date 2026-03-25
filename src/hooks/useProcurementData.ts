@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type RecordStatus = Database["public"]["Enums"]["record_status"];
 
 export const usePurchaseRequests = () =>
   useQuery({
