@@ -1,0 +1,231 @@
+import { createClient } from "npm:@supabase/supabase-js@2.100.0";
+import { PDFDocument, rgb, StandardFonts } from "npm:pdf-lib@1.17.1";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { type, id } = await req.json();
+    if (!type || !id) {
+      return new Response(JSON.stringify({ error: "type and id required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    if (type === "po") {
+      const { data: po, error } = await supabase
+        .from("purchase_orders")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (error || !po) throw new Error("PO not found");
+
+      // Fetch linked request/quotation
+      let request = null;
+      let quotation = null;
+      if (po.request_id) {
+        const { data } = await supabase.from("purchase_requests").select("*").eq("id", po.request_id).single();
+        request = data;
+      }
+      if (po.quotation_id) {
+        const { data } = await supabase.from("quotations").select("*").eq("id", po.quotation_id).single();
+        quotation = data;
+      }
+
+      const page = pdfDoc.addPage([595, 842]); // A4
+      let y = 790;
+      const left = 50;
+
+      // Header
+      page.drawText("PURCHASE ORDER", { x: left, y, font: fontBold, size: 20, color: rgb(0.07, 0.47, 0.43) });
+      y -= 30;
+      page.drawText("Your Company Name", { x: left, y, font: fontBold, size: 12 });
+      y -= 15;
+      page.drawText("123 Business Street, City, Country", { x: left, y, font, size: 9, color: rgb(0.4, 0.4, 0.4) });
+      y -= 30;
+
+      // PO details
+      page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
+      y -= 5;
+
+      const addField = (label: string, value: string) => {
+        page.drawText(label, { x: left, y, font: fontBold, size: 10 });
+        page.drawText(value || "—", { x: 200, y, font, size: 10 });
+        y -= 18;
+      };
+
+      addField("PO Number:", po.po_number);
+      addField("Vendor:", po.vendor_name);
+      addField("Amount:", `${po.currency || "HKD"} ${Number(po.total_amount || 0).toLocaleString()}`);
+      addField("Order Date:", po.order_date || "—");
+      addField("Expected Delivery:", po.expected_delivery || "—");
+      addField("Status:", (po.status || "draft").toUpperCase());
+      addField("Delivery Location:", po.delivery_location || "—");
+      addField("Quantity:", po.quantity ? String(po.quantity) : "—");
+
+      y -= 10;
+      if (po.goods_description) {
+        page.drawText("Goods Description:", { x: left, y, font: fontBold, size: 10 });
+        y -= 16;
+        // Word wrap description
+        const words = po.goods_description.split(" ");
+        let line = "";
+        for (const word of words) {
+          if (font.widthOfTextAtSize(line + " " + word, 9) > 480) {
+            page.drawText(line, { x: left, y, font, size: 9 });
+            y -= 14;
+            line = word;
+          } else {
+            line = line ? line + " " + word : word;
+          }
+        }
+        if (line) { page.drawText(line, { x: left, y, font, size: 9 }); y -= 14; }
+      }
+
+      // Linked records
+      if (request) {
+        y -= 15;
+        page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
+        y -= 5;
+        page.drawText("LINKED REQUEST", { x: left, y, font: fontBold, size: 11, color: rgb(0.07, 0.47, 0.43) });
+        y -= 18;
+        addField("Request #:", request.request_number);
+        addField("Title:", request.title);
+        addField("Requester:", request.requester_name);
+        addField("Department:", request.department || "—");
+      }
+
+      if (quotation) {
+        y -= 15;
+        page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
+        y -= 5;
+        page.drawText("LINKED QUOTATION", { x: left, y, font: fontBold, size: 11, color: rgb(0.07, 0.47, 0.43) });
+        y -= 18;
+        addField("Quotation #:", quotation.quotation_number);
+        addField("Vendor:", quotation.vendor_name);
+        addField("Amount:", `${quotation.currency || "HKD"} ${Number(quotation.total_amount || 0).toLocaleString()}`);
+      }
+
+      if (po.remarks) {
+        y -= 15;
+        page.drawText("Remarks:", { x: left, y, font: fontBold, size: 10 });
+        y -= 16;
+        page.drawText(po.remarks.slice(0, 500), { x: left, y, font, size: 9 });
+      }
+
+    } else if (type === "grn") {
+      const { data: grn, error } = await supabase
+        .from("goods_received")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (error || !grn) throw new Error("GRN not found");
+
+      let po = null;
+      let invoice = null;
+      if (grn.po_id) {
+        const { data } = await supabase.from("purchase_orders").select("*").eq("id", grn.po_id).single();
+        po = data;
+      }
+      if (grn.invoice_id) {
+        const { data } = await supabase.from("invoices").select("*").eq("id", grn.invoice_id).single();
+        invoice = data;
+      }
+
+      const page = pdfDoc.addPage([595, 842]);
+      let y = 790;
+      const left = 50;
+
+      page.drawText("GOODS RECEIVED NOTE", { x: left, y, font: fontBold, size: 20, color: rgb(0.07, 0.47, 0.43) });
+      y -= 30;
+      page.drawText("Your Company Name", { x: left, y, font: fontBold, size: 12 });
+      y -= 15;
+      page.drawText("123 Business Street, City, Country", { x: left, y, font, size: 9, color: rgb(0.4, 0.4, 0.4) });
+      y -= 30;
+
+      page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
+      y -= 5;
+
+      const addField = (label: string, value: string) => {
+        page.drawText(label, { x: left, y, font: fontBold, size: 10 });
+        page.drawText(value || "—", { x: 200, y, font, size: 10 });
+        y -= 18;
+      };
+
+      addField("GRN Number:", grn.grn_number);
+      addField("Vendor:", grn.vendor_name);
+      addField("Received Date:", grn.received_date || "—");
+      addField("Received By:", grn.received_by || "—");
+      addField("Quantity Received:", grn.quantity_received ? String(grn.quantity_received) : "—");
+      addField("Status:", (grn.status || "pending").toUpperCase());
+
+      if (po) {
+        y -= 15;
+        page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
+        y -= 5;
+        page.drawText("LINKED PURCHASE ORDER", { x: left, y, font: fontBold, size: 11, color: rgb(0.07, 0.47, 0.43) });
+        y -= 18;
+        addField("PO #:", po.po_number);
+        addField("Vendor:", po.vendor_name);
+        addField("Amount:", `${po.currency || "HKD"} ${Number(po.total_amount || 0).toLocaleString()}`);
+        addField("Goods:", po.goods_description || "—");
+        addField("Delivery Location:", po.delivery_location || "—");
+      }
+
+      if (invoice) {
+        y -= 15;
+        page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
+        y -= 5;
+        page.drawText("LINKED INVOICE", { x: left, y, font: fontBold, size: 11, color: rgb(0.07, 0.47, 0.43) });
+        y -= 18;
+        addField("Invoice #:", invoice.invoice_number);
+        addField("Amount:", `${invoice.currency || "HKD"} ${Number(invoice.total_amount || 0).toLocaleString()}`);
+      }
+
+      if (grn.remarks) {
+        y -= 15;
+        page.drawText("Remarks:", { x: left, y, font: fontBold, size: 10 });
+        y -= 16;
+        page.drawText(grn.remarks.slice(0, 500), { x: left, y, font, size: 9 });
+      }
+
+    } else {
+      return new Response(JSON.stringify({ error: "Invalid type. Use 'po' or 'grn'" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    return new Response(pdfBytes, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${type}-${id}.pdf"`,
+      },
+    });
+
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
