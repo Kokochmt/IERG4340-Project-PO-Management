@@ -17,39 +17,48 @@ export type Database = {
       goods_received: {
         Row: {
           created_at: string
+          file_url: string | null
           grn_number: string
           id: string
           invoice_id: string | null
           notes: string | null
           po_id: string | null
+          quantity_received: number | null
           received_by: string | null
           received_date: string | null
+          remarks: string | null
           status: Database["public"]["Enums"]["record_status"] | null
           updated_at: string
           vendor_name: string
         }
         Insert: {
           created_at?: string
+          file_url?: string | null
           grn_number: string
           id?: string
           invoice_id?: string | null
           notes?: string | null
           po_id?: string | null
+          quantity_received?: number | null
           received_by?: string | null
           received_date?: string | null
+          remarks?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           updated_at?: string
           vendor_name: string
         }
         Update: {
           created_at?: string
+          file_url?: string | null
           grn_number?: string
           id?: string
           invoice_id?: string | null
           notes?: string | null
           po_id?: string | null
+          quantity_received?: number | null
           received_by?: string | null
           received_date?: string | null
+          remarks?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           updated_at?: string
           vendor_name?: string
@@ -74,12 +83,15 @@ export type Database = {
       invoices: {
         Row: {
           created_at: string
+          currency: string
           due_date: string | null
+          file_url: string | null
           id: string
           invoice_date: string | null
           invoice_number: string
           notes: string | null
           po_id: string | null
+          remarks: string | null
           status: Database["public"]["Enums"]["record_status"] | null
           tax_amount: number | null
           total_amount: number | null
@@ -88,12 +100,15 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          currency?: string
           due_date?: string | null
+          file_url?: string | null
           id?: string
           invoice_date?: string | null
           invoice_number: string
           notes?: string | null
           po_id?: string | null
+          remarks?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           tax_amount?: number | null
           total_amount?: number | null
@@ -102,12 +117,15 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          currency?: string
           due_date?: string | null
+          file_url?: string | null
           id?: string
           invoice_date?: string | null
           invoice_number?: string
           notes?: string | null
           po_id?: string | null
+          remarks?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           tax_amount?: number | null
           total_amount?: number | null
@@ -124,15 +142,42 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       purchase_orders: {
         Row: {
           created_at: string
+          currency: string
+          delivery_location: string | null
           expected_delivery: string | null
+          file_url: string | null
+          goods_description: string | null
           id: string
           notes: string | null
           order_date: string | null
           po_number: string
+          quantity: number | null
           quotation_id: string | null
+          remarks: string | null
           request_id: string | null
           status: Database["public"]["Enums"]["record_status"] | null
           total_amount: number | null
@@ -141,12 +186,18 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          currency?: string
+          delivery_location?: string | null
           expected_delivery?: string | null
+          file_url?: string | null
+          goods_description?: string | null
           id?: string
           notes?: string | null
           order_date?: string | null
           po_number: string
+          quantity?: number | null
           quotation_id?: string | null
+          remarks?: string | null
           request_id?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           total_amount?: number | null
@@ -155,12 +206,18 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          currency?: string
+          delivery_location?: string | null
           expected_delivery?: string | null
+          file_url?: string | null
+          goods_description?: string | null
           id?: string
           notes?: string | null
           order_date?: string | null
           po_number?: string
+          quantity?: number | null
           quotation_id?: string | null
+          remarks?: string | null
           request_id?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           total_amount?: number | null
@@ -187,10 +244,13 @@ export type Database = {
       purchase_requests: {
         Row: {
           created_at: string
+          currency: string
           department: string | null
           description: string | null
+          file_url: string | null
           id: string
           priority: string | null
+          remarks: string | null
           request_number: string
           requester_name: string
           status: Database["public"]["Enums"]["record_status"] | null
@@ -200,10 +260,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          currency?: string
           department?: string | null
           description?: string | null
+          file_url?: string | null
           id?: string
           priority?: string | null
+          remarks?: string | null
           request_number: string
           requester_name: string
           status?: Database["public"]["Enums"]["record_status"] | null
@@ -213,10 +276,13 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          currency?: string
           department?: string | null
           description?: string | null
+          file_url?: string | null
           id?: string
           priority?: string | null
+          remarks?: string | null
           request_number?: string
           requester_name?: string
           status?: Database["public"]["Enums"]["record_status"] | null
@@ -229,9 +295,12 @@ export type Database = {
       quotations: {
         Row: {
           created_at: string
+          currency: string
+          file_url: string | null
           id: string
           notes: string | null
           quotation_number: string
+          remarks: string | null
           request_id: string | null
           status: Database["public"]["Enums"]["record_status"] | null
           total_amount: number | null
@@ -242,9 +311,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          currency?: string
+          file_url?: string | null
           id?: string
           notes?: string | null
           quotation_number: string
+          remarks?: string | null
           request_id?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           total_amount?: number | null
@@ -255,9 +327,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          currency?: string
+          file_url?: string | null
           id?: string
           notes?: string | null
           quotation_number?: string
+          remarks?: string | null
           request_id?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           total_amount?: number | null
@@ -276,14 +351,39 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "observer" | "casual_buyer"
       record_status:
         | "draft"
         | "pending"
@@ -418,6 +518,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["observer", "casual_buyer"],
       record_status: [
         "draft",
         "pending",
