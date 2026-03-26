@@ -91,7 +91,9 @@ export type Database = {
           invoice_number: string
           notes: string | null
           po_id: string | null
+          quotation_id: string | null
           remarks: string | null
+          request_id: string | null
           status: Database["public"]["Enums"]["record_status"] | null
           tax_amount: number | null
           total_amount: number | null
@@ -108,7 +110,9 @@ export type Database = {
           invoice_number: string
           notes?: string | null
           po_id?: string | null
+          quotation_id?: string | null
           remarks?: string | null
+          request_id?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           tax_amount?: number | null
           total_amount?: number | null
@@ -125,7 +129,9 @@ export type Database = {
           invoice_number?: string
           notes?: string | null
           po_id?: string | null
+          quotation_id?: string | null
           remarks?: string | null
+          request_id?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           tax_amount?: number | null
           total_amount?: number | null
@@ -138,6 +144,20 @@ export type Database = {
             columns: ["po_id"]
             isOneToOne: false
             referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_requests"
             referencedColumns: ["id"]
           },
         ]
