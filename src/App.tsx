@@ -12,6 +12,7 @@ import Quotations from "./pages/Quotations";
 import PurchaseOrders from "./pages/PurchaseOrders";
 import Invoices from "./pages/Invoices";
 import GoodsReceived from "./pages/GoodsReceived";
+import UserManagement from "./pages/UserManagement";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
