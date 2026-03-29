@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-type AppRole = "observer" | "casual_buyer";
+type AppRole = "observer" | "casual_buyer" | "admin";
 
 interface AuthContextType {
   user: User | null;
@@ -10,6 +10,9 @@ interface AuthContextType {
   role: AppRole | null;
   loading: boolean;
   isCasualBuyer: boolean;
+  isAdmin: boolean;
+  canEdit: boolean;
+  username: string | null;
   signOut: () => Promise<void>;
 }
 
@@ -19,6 +22,9 @@ const AuthContext = createContext<AuthContextType>({
   role: null,
   loading: true,
   isCasualBuyer: false,
+  isAdmin: false,
+  canEdit: false,
+  username: null,
   signOut: async () => {},
 });
 
@@ -69,6 +75,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signOut();
   };
 
+  const username = user?.user_metadata?.username ?? null;
+  const isAdmin = role === "admin";
+  const isCasualBuyer = role === "casual_buyer";
+  const canEdit = isAdmin || isCasualBuyer;
+
   return (
     <AuthContext.Provider
       value={{
@@ -76,7 +87,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         session,
         role,
         loading,
-        isCasualBuyer: role === "casual_buyer",
+        isCasualBuyer,
+        isAdmin,
+        canEdit,
+        username,
         signOut,
       }}
     >
