@@ -20,7 +20,7 @@ const GoodsReceived = () => {
   const { data: orders = [] } = usePurchaseOrders();
   const { data: invoices = [] } = useInvoices();
   const queryClient = useQueryClient();
-  const { isCasualBuyer } = useAuth();
+  const { canEdit } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
 
@@ -102,7 +102,7 @@ const GoodsReceived = () => {
           <h1 className="text-2xl font-bold">Goods Received</h1>
           <p className="text-muted-foreground mt-1">Track received goods and deliveries</p>
         </div>
-        {isCasualBuyer && (
+        {canEdit && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button><Plus className="h-4 w-4 mr-2" />New GRN</Button>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,29 +8,54 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 import { z } from "zod";
 
-const emailSchema = z.string().trim().email("Invalid email").max(255);
-const passwordSchema = z.string().min(6, "Min 6 characters").max(128);
+const usernameSchema = z
+  .string()
+  .trim()
+  .min(3, "Username must be at least 3 characters")
+  .max(30, "Username max 30 characters")
+  .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores");
+const passwordSchema = z.string().min(4, "Min 4 characters").max(128);
+
+const toFakeEmail = (username: string) => `${username.toLowerCase()}@procureflow.local`;
 
 const Login = () => {
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+
+  // Seed admin on first load
+  useEffect(() => {
+    const seedAdmin = async () => {
+      try {
+        setSeeding(true);
+        await supabase.functions.invoke("seed-admin");
+      } catch {
+        // ignore
+      } finally {
+        setSeeding(false);
+      }
+    };
+    seedAdmin();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     const fd = new FormData(e.currentTarget);
-    const email = (fd.get("email") as string).trim();
+    const username = (fd.get("username") as string).trim();
     const password = fd.get("password") as string;
 
     try {
-      emailSchema.parse(email);
+      usernameSchema.parse(username);
       passwordSchema.parse(password);
     } catch (err: any) {
       toast.error(err.errors?.[0]?.message || "Invalid input");
       setLoading(false);
       return;
     }
+
+    const fakeEmail = toFakeEmail(username);
 
     if (isSignUp) {
       const fullName = ((fd.get("full_name") as string) || "").trim();
@@ -39,21 +64,45 @@ const Login = () => {
         setLoading(false);
         return;
       }
+
+      // Check username availability
+      const { data: available, error: checkErr } = await supabase.rpc(
+        "check_username_available",
+        { p_username: username }
+      );
+      if (checkErr || available === false) {
+        toast.error("Username is already taken");
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.signUp({
-        email,
+        email: fakeEmail,
         password,
-        options: { data: { full_name: fullName } },
+        options: { data: { full_name: fullName, username } },
       });
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Account created! You can now sign in.");
-        navigate("/");
+        toast.success("Account created! Signing you in...");
+        // Auto-confirm is on, so sign in immediately
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
+          email: fakeEmail,
+          password,
+        });
+        if (signInErr) {
+          toast.error(signInErr.message);
+        } else {
+          navigate("/");
+        }
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: fakeEmail,
+        password,
+      });
       if (error) {
-        toast.error(error.message);
+        toast.error("Invalid username or password");
       } else {
         navigate("/");
       }
@@ -66,7 +115,9 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-primary">ProcureFlow</CardTitle>
-          <CardDescription>{isSignUp ? "Create your account" : "Sign in to your account"}</CardDescription>
+          <CardDescription>
+            {isSignUp ? "Create your account" : "Sign in to your account"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -77,14 +128,28 @@ const Login = () => {
               </div>
             )}
             <div>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" required maxLength={255} />
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                name="username"
+                required
+                maxLength={30}
+                autoComplete="username"
+                placeholder="e.g. john_doe"
+              />
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required minLength={6} maxLength={128} />
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+                minLength={4}
+                maxLength={128}
+              />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading || seeding}>
               {loading ? "Please wait..." : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
           </form>

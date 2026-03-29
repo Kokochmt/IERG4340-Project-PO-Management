@@ -7,6 +7,7 @@ import {
   Receipt,
   PackageCheck,
   LogOut,
+  Users,
 } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +23,9 @@ const navItems = [
 
 const AppSidebar = () => {
   const location = useLocation();
-  const { user, role, signOut } = useAuth();
+  const { username, role, isAdmin, signOut } = useAuth();
+
+  const roleLabel = role === "admin" ? "Admin" : role === "casual_buyer" ? "Casual Buyer" : role === "observer" ? "Observer" : "—";
 
   return (
     <aside className="w-64 min-h-screen bg-sidebar text-sidebar-foreground flex flex-col">
@@ -50,12 +53,25 @@ const AppSidebar = () => {
             </NavLink>
           );
         })}
+        {isAdmin && (
+          <NavLink
+            to="/users"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+              location.pathname === "/users"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+            }`}
+          >
+            <Users className="h-4 w-4" />
+            User Management
+          </NavLink>
+        )}
       </nav>
       <div className="p-3 border-t border-sidebar-border space-y-2">
         <div className="px-3 py-2">
-          <p className="text-xs text-sidebar-foreground/60 truncate">{user?.email}</p>
+          <p className="text-xs text-sidebar-foreground/60 truncate">{username || "—"}</p>
           <Badge variant="outline" className="mt-1 text-[10px] border-sidebar-border text-sidebar-foreground/70">
-            {role === "casual_buyer" ? "Casual Buyer" : role === "observer" ? "Observer" : "—"}
+            {roleLabel}
           </Badge>
         </div>
         <button

@@ -168,18 +168,21 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          username: string | null
         }
         Insert: {
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
+          username?: string | null
         }
         Update: {
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -394,6 +397,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_username_available: {
+        Args: { p_username: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -403,7 +410,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "observer" | "casual_buyer"
+      app_role: "observer" | "casual_buyer" | "admin"
       record_status:
         | "draft"
         | "pending"
@@ -538,7 +545,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["observer", "casual_buyer"],
+      app_role: ["observer", "casual_buyer", "admin"],
       record_status: [
         "draft",
         "pending",

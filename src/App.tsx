@@ -12,6 +12,7 @@ import Quotations from "./pages/Quotations";
 import PurchaseOrders from "./pages/PurchaseOrders";
 import Invoices from "./pages/Invoices";
 import GoodsReceived from "./pages/GoodsReceived";
+import UserManagement from "./pages/UserManagement";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/purchase-orders" element={<PurchaseOrders />} />
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/goods-received" element={<GoodsReceived />} />
+              <Route path="/users" element={<UserManagement />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
