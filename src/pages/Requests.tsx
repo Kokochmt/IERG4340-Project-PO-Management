@@ -19,7 +19,7 @@ import { requestSchema, extractFormData } from "@/lib/validation";
 const Requests = () => {
   const { data = [], isLoading } = usePurchaseRequests();
   const queryClient = useQueryClient();
-  const { isCasualBuyer } = useAuth();
+  const { canEdit } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
 
@@ -77,7 +77,7 @@ const Requests = () => {
           <h1 className="text-2xl font-bold">Purchase Requests</h1>
           <p className="text-muted-foreground mt-1">Manage purchase requests from your organization</p>
         </div>
-        {isCasualBuyer && (
+        {canEdit && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button><Plus className="h-4 w-4 mr-2" />New Request</Button>

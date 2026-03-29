@@ -18,7 +18,7 @@ import { quotationSchema, extractFormData } from "@/lib/validation";
 const Quotations = () => {
   const { data = [], isLoading } = useQuotations();
   const queryClient = useQueryClient();
-  const { isCasualBuyer } = useAuth();
+  const { canEdit } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
 
@@ -70,7 +70,7 @@ const Quotations = () => {
           <h1 className="text-2xl font-bold">Quotations</h1>
           <p className="text-muted-foreground mt-1">Track vendor quotations</p>
         </div>
-        {isCasualBuyer && (
+        {canEdit && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button><Plus className="h-4 w-4 mr-2" />New Quotation</Button>
