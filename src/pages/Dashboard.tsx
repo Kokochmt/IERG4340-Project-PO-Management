@@ -2,6 +2,7 @@ import { FileText, FileSearch, ShoppingCart, Receipt, PackageCheck } from "lucid
 import StatsCard from "@/components/StatsCard";
 import StatusBadge from "@/components/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/components/AuthProvider";
 import {
   usePurchaseRequests,
   useQuotations,
@@ -11,22 +12,23 @@ import {
 } from "@/hooks/useProcurementData";
 
 const Dashboard = () => {
+  const { fullName, username } = useAuth();
   const { data: requests = [] } = usePurchaseRequests();
   const { data: quotations = [] } = useQuotations();
   const { data: orders = [] } = usePurchaseOrders();
   const { data: invoices = [] } = useInvoices();
   const { data: grns = [] } = useGoodsReceived();
 
-  const pendingOrders = orders.filter((o) => o.status === "pending" || o.status === "approved");
+  const displayName = fullName || username || "User";
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold">Welcome, {displayName}</h1>
         <p className="text-muted-foreground mt-1">Overview of your procurement activity</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
         <StatsCard title="Requests" value={requests.length} icon={FileText} />
         <StatsCard title="Quotations" value={quotations.length} icon={FileSearch} />
         <StatsCard title="Purchase Orders" value={orders.length} icon={ShoppingCart} />
@@ -45,13 +47,13 @@ const Dashboard = () => {
             ) : (
               <div className="space-y-3">
                 {orders.slice(0, 5).map((po) => (
-                  <div key={po.id} className="flex items-center justify-between py-2 border-b last:border-0">
-                    <div>
-                      <p className="text-sm font-medium">{po.po_number}</p>
-                      <p className="text-xs text-muted-foreground">{po.vendor_name}</p>
+                  <div key={po.id} className="flex items-center justify-between py-2 border-b last:border-0 gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{po.po_number}</p>
+                      <p className="text-xs text-muted-foreground truncate">{po.vendor_name}</p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium">
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                      <span className="text-sm font-medium hidden sm:inline">
                         ${Number(po.total_amount || 0).toLocaleString()}
                       </span>
                       <StatusBadge status={po.status} />
@@ -73,12 +75,14 @@ const Dashboard = () => {
             ) : (
               <div className="space-y-3">
                 {requests.slice(0, 5).map((req) => (
-                  <div key={req.id} className="flex items-center justify-between py-2 border-b last:border-0">
-                    <div>
-                      <p className="text-sm font-medium">{req.title}</p>
-                      <p className="text-xs text-muted-foreground">{req.request_number} · {req.department}</p>
+                  <div key={req.id} className="flex items-center justify-between py-2 border-b last:border-0 gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{req.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">{req.request_number} · {req.department}</p>
                     </div>
-                    <StatusBadge status={req.status} />
+                    <div className="shrink-0">
+                      <StatusBadge status={req.status} />
+                    </div>
                   </div>
                 ))}
               </div>
