@@ -27,9 +27,9 @@ const GoodsReceived = () => {
   const columns = [
     { key: "grn_number", label: "GRN #" },
     { key: "vendor_name", label: "Vendor" },
-    { key: "received_date", label: "Received Date" },
-    { key: "received_by", label: "Received By" },
-    { key: "quantity_received", label: "Qty" },
+    { key: "received_date", label: "Received Date", hideOnMobile: true },
+    { key: "received_by", label: "Received By", hideOnMobile: true },
+    { key: "quantity_received", label: "Qty", hideOnMobile: true },
     { key: "status", label: "Status" },
     {
       key: "id",
@@ -97,21 +97,21 @@ const GoodsReceived = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Goods Received</h1>
-          <p className="text-muted-foreground mt-1">Track received goods and deliveries</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Goods Received</h1>
+          <p className="text-muted-foreground text-sm mt-1">Track received goods and deliveries</p>
         </div>
         {canEdit && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" />New GRN</Button>
+              <Button className="shrink-0"><Plus className="h-4 w-4 mr-2" />New GRN</Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
               <DialogHeader><DialogTitle>New Goods Received Note</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div><Label>Vendor Name</Label><Input name="vendor_name" required maxLength={200} /></div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Linked PO</Label>
                     <Select name="po_id">
@@ -135,14 +135,14 @@ const GoodsReceived = () => {
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div><Label>Received Date</Label><Input name="received_date" type="date" /></div>
                   <div><Label>Received By</Label><Input name="received_by" maxLength={100} /></div>
                 </div>
                 <div><Label>Quantity Received</Label><Input name="quantity_received" type="number" min="0" /></div>
                 <div><Label>Notes</Label><Textarea name="notes" maxLength={2000} /></div>
                 <div><Label>Remarks</Label><Textarea name="remarks" maxLength={2000} placeholder="Additional remarks..." /></div>
-                <div><Label>Attachment</Label><FileUpload onUploaded={setFileUrl} /></div>
+                <div><Label>Attachments</Label><FileUpload onUploaded={setFileUrl} /></div>
                 <Button type="submit" className="w-full">Create GRN</Button>
               </form>
             </DialogContent>

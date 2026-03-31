@@ -28,19 +28,15 @@ const PurchaseOrders = () => {
   const columns = [
     { key: "po_number", label: "PO #" },
     { key: "vendor_name", label: "Vendor" },
-    { key: "total_amount", label: "Amount", render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
-    { key: "order_date", label: "Order Date" },
-    { key: "expected_delivery", label: "Expected Delivery" },
+    { key: "total_amount", label: "Amount", hideOnMobile: true, render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
+    { key: "order_date", label: "Order Date", hideOnMobile: true },
+    { key: "expected_delivery", label: "Expected Delivery", hideOnMobile: true },
     { key: "status", label: "Status" },
     {
       key: "id",
       label: "PDF",
       render: (_: any, row: any) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => generatePdf(row.id)}
-        >
+        <Button variant="ghost" size="sm" onClick={() => generatePdf(row.id)}>
           <FileDown className="h-4 w-4" />
         </Button>
       ),
@@ -54,8 +50,6 @@ const PurchaseOrders = () => {
         body: { type: "po", id: poId },
       });
       if (error) throw error;
-
-      // data is a blob/arraybuffer
       const blob = new Blob([data], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -109,21 +103,21 @@ const PurchaseOrders = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Purchase Orders</h1>
-          <p className="text-muted-foreground mt-1">Track and manage purchase orders</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Purchase Orders</h1>
+          <p className="text-muted-foreground text-sm mt-1">Track and manage purchase orders</p>
         </div>
         {canEdit && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" />New PO</Button>
+              <Button className="shrink-0"><Plus className="h-4 w-4 mr-2" />New PO</Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
               <DialogHeader><DialogTitle>New Purchase Order</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div><Label>Vendor Name</Label><Input name="vendor_name" required maxLength={200} /></div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Linked Request</Label>
                     <Select name="request_id">
@@ -147,7 +141,7 @@ const PurchaseOrders = () => {
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div><Label>Amount</Label><Input name="total_amount" type="number" step="0.01" min="0" /></div>
                   <div><Label>Currency</Label><CurrencySelect /></div>
                   <div><Label>Quantity</Label><Input name="quantity" type="number" min="0" /></div>
@@ -163,7 +157,7 @@ const PurchaseOrders = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div><Label>Order Date</Label><Input name="order_date" type="date" /></div>
                   <div><Label>Expected Delivery</Label><Input name="expected_delivery" type="date" /></div>
                 </div>
@@ -171,7 +165,7 @@ const PurchaseOrders = () => {
                 <div><Label>Goods Description</Label><Textarea name="goods_description" maxLength={2000} /></div>
                 <div><Label>Notes</Label><Textarea name="notes" maxLength={2000} /></div>
                 <div><Label>Remarks</Label><Textarea name="remarks" maxLength={2000} placeholder="Additional remarks..." /></div>
-                <div><Label>Attachment</Label><FileUpload onUploaded={setFileUrl} /></div>
+                <div><Label>Attachments</Label><FileUpload onUploaded={setFileUrl} /></div>
                 <Button type="submit" className="w-full">Create PO</Button>
               </form>
             </DialogContent>

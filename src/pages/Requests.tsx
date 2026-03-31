@@ -26,12 +26,13 @@ const Requests = () => {
   const columns = [
     { key: "request_number", label: "Request #" },
     { key: "title", label: "Title" },
-    { key: "requester_name", label: "Requester" },
-    { key: "department", label: "Department" },
-    { key: "priority", label: "Priority" },
+    { key: "requester_name", label: "Requester", hideOnMobile: true },
+    { key: "department", label: "Department", hideOnMobile: true },
+    { key: "priority", label: "Priority", hideOnMobile: true },
     {
       key: "total_amount",
       label: "Amount",
+      hideOnMobile: true,
       render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}`,
     },
     { key: "status", label: "Status" },
@@ -72,22 +73,22 @@ const Requests = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Purchase Requests</h1>
-          <p className="text-muted-foreground mt-1">Manage purchase requests from your organization</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Purchase Requests</h1>
+          <p className="text-muted-foreground text-sm mt-1">Manage purchase requests from your organization</p>
         </div>
         {canEdit && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" />New Request</Button>
+              <Button className="shrink-0"><Plus className="h-4 w-4 mr-2" />New Request</Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
               <DialogHeader><DialogTitle>New Purchase Request</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div><Label>Title</Label><Input name="title" required maxLength={200} /></div>
                 <div><Label>Requester Name</Label><Input name="requester_name" required maxLength={100} /></div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div><Label>Department</Label><Input name="department" maxLength={100} /></div>
                   <div>
                     <Label>Priority</Label>
@@ -101,13 +102,13 @@ const Requests = () => {
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div><Label>Amount</Label><Input name="total_amount" type="number" step="0.01" min="0" /></div>
                   <div><Label>Currency</Label><CurrencySelect /></div>
                 </div>
                 <div><Label>Description</Label><Textarea name="description" maxLength={2000} /></div>
                 <div><Label>Remarks</Label><Textarea name="remarks" maxLength={2000} placeholder="Additional remarks..." /></div>
-                <div><Label>Attachment</Label><FileUpload onUploaded={setFileUrl} /></div>
+                <div><Label>Attachments</Label><FileUpload onUploaded={setFileUrl} /></div>
                 <Button type="submit" className="w-full">Create Request</Button>
               </form>
             </DialogContent>
