@@ -28,10 +28,10 @@ const Invoices = () => {
   const columns = [
     { key: "invoice_number", label: "Invoice #" },
     { key: "vendor_name", label: "Vendor" },
-    { key: "total_amount", label: "Amount", render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
-    { key: "tax_amount", label: "Tax", render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
-    { key: "invoice_date", label: "Invoice Date" },
-    { key: "due_date", label: "Due Date" },
+    { key: "total_amount", label: "Amount", hideOnMobile: true, render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
+    { key: "tax_amount", label: "Tax", hideOnMobile: true, render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
+    { key: "invoice_date", label: "Invoice Date", hideOnMobile: true },
+    { key: "due_date", label: "Due Date", hideOnMobile: true },
     { key: "status", label: "Status" },
   ];
 
@@ -71,21 +71,21 @@ const Invoices = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Invoices</h1>
-          <p className="text-muted-foreground mt-1">Manage vendor invoices</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Invoices</h1>
+          <p className="text-muted-foreground text-sm mt-1">Manage vendor invoices</p>
         </div>
         {canEdit && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" />New Invoice</Button>
+              <Button className="shrink-0"><Plus className="h-4 w-4 mr-2" />New Invoice</Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
               <DialogHeader><DialogTitle>New Invoice</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div><Label>Vendor Name</Label><Input name="vendor_name" required maxLength={200} /></div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Linked Request</Label>
                     <Select name="request_id">
@@ -109,18 +109,18 @@ const Invoices = () => {
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div><Label>Amount</Label><Input name="total_amount" type="number" step="0.01" min="0" /></div>
                   <div><Label>Tax Amount</Label><Input name="tax_amount" type="number" step="0.01" min="0" /></div>
                   <div><Label>Currency</Label><CurrencySelect /></div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div><Label>Invoice Date</Label><Input name="invoice_date" type="date" /></div>
                   <div><Label>Due Date</Label><Input name="due_date" type="date" /></div>
                 </div>
                 <div><Label>Notes</Label><Textarea name="notes" maxLength={2000} /></div>
                 <div><Label>Remarks</Label><Textarea name="remarks" maxLength={2000} placeholder="Additional remarks..." /></div>
-                <div><Label>Attachment</Label><FileUpload onUploaded={setFileUrl} /></div>
+                <div><Label>Attachments</Label><FileUpload onUploaded={setFileUrl} /></div>
                 <Button type="submit" className="w-full">Create Invoice</Button>
               </form>
             </DialogContent>

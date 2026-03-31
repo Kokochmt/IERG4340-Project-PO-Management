@@ -12,6 +12,7 @@ interface Column {
   key: string;
   label: string;
   render?: (value: any, row: any) => React.ReactNode;
+  hideOnMobile?: boolean;
 }
 
 interface RecordTableProps {
@@ -31,12 +32,15 @@ const RecordTable = ({ columns, data, loading, emptyMessage = "No records found"
   }
 
   return (
-    <div className="rounded-lg border bg-card">
+    <div className="rounded-lg border bg-card overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
             {columns.map((col) => (
-              <TableHead key={col.key} className="font-semibold">
+              <TableHead
+                key={col.key}
+                className={`font-semibold ${col.hideOnMobile ? "hidden sm:table-cell" : ""}`}
+              >
                 {col.label}
               </TableHead>
             ))}
@@ -53,7 +57,10 @@ const RecordTable = ({ columns, data, loading, emptyMessage = "No records found"
             data.map((row, i) => (
               <TableRow key={row.id || i}>
                 {columns.map((col) => (
-                  <TableCell key={col.key}>
+                  <TableCell
+                    key={col.key}
+                    className={col.hideOnMobile ? "hidden sm:table-cell" : ""}
+                  >
                     {col.render
                       ? col.render(row[col.key], row)
                       : col.key === "status"

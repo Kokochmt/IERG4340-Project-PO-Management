@@ -21,7 +21,11 @@ const navItems = [
   { to: "/goods-received", label: "Goods Received", icon: PackageCheck },
 ];
 
-const AppSidebar = () => {
+interface AppSidebarProps {
+  onNavigate?: () => void;
+}
+
+const AppSidebar = ({ onNavigate }: AppSidebarProps) => {
   const location = useLocation();
   const { username, role, isAdmin, signOut } = useAuth();
 
@@ -42,6 +46,7 @@ const AppSidebar = () => {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={onNavigate}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
@@ -56,6 +61,7 @@ const AppSidebar = () => {
         {isAdmin && (
           <NavLink
             to="/users"
+            onClick={onNavigate}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
               location.pathname === "/users"
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
