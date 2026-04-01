@@ -65,36 +65,26 @@ const Login = () => {
         return;
       }
 
-      // Check username availability
-      const { data: available, error: checkErr } = await supabase.rpc(
-        "check_username_available",
-        { p_username: username }
-      );
-      if (checkErr || available === false) {
-        toast.error("Username is already taken");
+      // Use edge function to create user (bypasses email confirmation)
+      const { data, error: fnErr } = await supabase.functions.invoke("signup-user", {
+        body: { username, password, full_name: fullName },
+      });
+
+      if (fnErr || data?.error) {
+        toast.error(data?.error || fnErr?.message || "Signup failed");
         setLoading(false);
         return;
       }
 
-      const { error } = await supabase.auth.signUp({
+      toast.success("Account created! Signing you in...");
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
         email: fakeEmail,
         password,
-        options: { data: { full_name: fullName, username } },
       });
-      if (error) {
-        toast.error(error.message);
+      if (signInErr) {
+        toast.error(signInErr.message);
       } else {
-        toast.success("Account created! Signing you in...");
-        // Auto-confirm is on, so sign in immediately
-        const { error: signInErr } = await supabase.auth.signInWithPassword({
-          email: fakeEmail,
-          password,
-        });
-        if (signInErr) {
-          toast.error(signInErr.message);
-        } else {
-          navigate("/");
-        }
+        navigate("/");
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
