@@ -101,6 +101,14 @@ const UserManagement = () => {
     return () => window.removeEventListener("beforeunload", handler);
   }, [hasChanges]);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12 text-muted-foreground">
+        Loading...
+      </div>
+    );
+  }
+
   if (!isAdmin) return <Navigate to="/" replace />;
 
   return (
