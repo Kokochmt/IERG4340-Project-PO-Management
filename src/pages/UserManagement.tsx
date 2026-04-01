@@ -26,7 +26,7 @@ const ROLE_OPTIONS = [
 ] as const;
 
 const UserManagement = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, loading } = useAuth();
   const queryClient = useQueryClient();
   const [pendingChanges, setPendingChanges] = useState<Record<string, string>>({});
 
