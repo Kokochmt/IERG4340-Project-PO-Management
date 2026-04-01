@@ -26,7 +26,7 @@ const ROLE_OPTIONS = [
 ] as const;
 
 const UserManagement = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, loading } = useAuth();
   const queryClient = useQueryClient();
   const [pendingChanges, setPendingChanges] = useState<Record<string, string>>({});
 
@@ -100,6 +100,14 @@ const UserManagement = () => {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [hasChanges]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12 text-muted-foreground">
+        Loading...
+      </div>
+    );
+  }
 
   if (!isAdmin) return <Navigate to="/" replace />;
 
