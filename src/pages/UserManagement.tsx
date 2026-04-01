@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
@@ -17,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Shield, User, Eye, Save } from "lucide-react";
+import { Shield, User, Eye, Save, Trash2 } from "lucide-react";
 
 const ROLE_OPTIONS = [
   { value: "observer", label: "Observer", icon: Eye },
@@ -29,10 +29,9 @@ const UserManagement = () => {
   const { isAdmin, loading } = useAuth();
   const queryClient = useQueryClient();
   const [pendingChanges, setPendingChanges] = useState<Record<string, string>>({});
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; username: string } | null>(null);
 
   const hasChanges = Object.keys(pendingChanges).length > 0;
-
-  // Block navigation when there are unsaved changes
   const blocker = useBlocker(hasChanges);
 
   const { data: users, isLoading } = useQuery({
@@ -78,6 +77,23 @@ const UserManagement = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke("delete-user", {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin_users"] });
+      setDeleteTarget(null);
+      toast.success("User removed successfully");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
   const handleRoleChange = (userId: string, currentRole: string, newRole: string) => {
     if (newRole === currentRole) {
       setPendingChanges((prev) => {
@@ -90,7 +106,6 @@ const UserManagement = () => {
     }
   };
 
-  // Warn on browser close/refresh
   useEffect(() => {
     if (!hasChanges) return;
     const handler = (e: BeforeUnloadEvent) => {
@@ -143,6 +158,7 @@ const UserManagement = () => {
                 <TableHead className="hidden sm:table-cell">Full Name</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead className="hidden sm:table-cell">Joined</TableHead>
+                <TableHead className="w-[60px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -190,6 +206,18 @@ const UserManagement = () => {
                     <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
                       {new Date(u.created_at).toLocaleDateString()}
                     </TableCell>
+                    <TableCell>
+                      {!u.isDefaultAdmin && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteTarget({ id: u.id, username: u.username || "this user" })}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -197,6 +225,28 @@ const UserManagement = () => {
           </Table>
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove <strong>{deleteTarget?.username}</strong>? This action cannot be undone and will permanently delete the user account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && deleteUser.mutate(deleteTarget.id)}
+              disabled={deleteUser.isPending}
+            >
+              {deleteUser.isPending ? "Removing..." : "Remove User"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Navigation blocker dialog */}
       <AlertDialog open={blocker.state === "blocked"}>
