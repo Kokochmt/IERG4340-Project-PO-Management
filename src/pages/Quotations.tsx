@@ -79,7 +79,7 @@ const Quotations = () => {
             <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
               <DialogHeader><DialogTitle>New Quotation</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div><Label>Vendor Name</Label><Input name="vendor_name" required maxLength={200} /></div>
+                <div><Label>Vendor Name</Label><CompanySelect /></div>
                 <div><Label>Vendor Contact</Label><Input name="vendor_contact" maxLength={200} /></div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div><Label>Amount</Label><Input name="total_amount" type="number" step="0.01" min="0" /></div>

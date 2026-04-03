@@ -85,7 +85,7 @@ const Invoices = () => {
             <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
               <DialogHeader><DialogTitle>New Invoice</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div><Label>Vendor Name</Label><Input name="vendor_name" required maxLength={200} /></div>
+                <div><Label>Vendor Name</Label><CompanySelect /></div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Linked Request</Label>
