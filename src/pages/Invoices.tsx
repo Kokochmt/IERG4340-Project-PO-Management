@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import RecordTable from "@/components/RecordTable";
 import FileUpload from "@/components/FileUpload";
+import CompanySelect from "@/components/CompanySelect";
 import CurrencySelect from "@/components/CurrencySelect";
 import { useInvoices, usePurchaseRequests, useQuotations } from "@/hooks/useProcurementData";
 import { useAuth } from "@/components/AuthProvider";
@@ -84,7 +85,7 @@ const Invoices = () => {
             <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
               <DialogHeader><DialogTitle>New Invoice</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div><Label>Vendor Name</Label><Input name="vendor_name" required maxLength={200} /></div>
+                <div><Label>Vendor Name</Label><CompanySelect /></div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Linked Request</Label>

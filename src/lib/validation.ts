@@ -14,6 +14,8 @@ const safeText = (max: number) =>
 const safeTextRequired = (max: number) =>
   z.string().trim().min(1, "Required").max(max).transform(sanitize);
 
+const vendorName = safeTextRequired(200).refine((v) => v !== "-", { message: "Please select a company" });
+
 const positiveAmount = z
   .number({ coerce: true })
   .min(0, "Must be non-negative")
@@ -33,7 +35,7 @@ export const requestSchema = z.object({
 });
 
 export const quotationSchema = z.object({
-  vendor_name: safeTextRequired(200),
+  vendor_name: vendorName,
   vendor_contact: safeText(200).optional(),
   total_amount: positiveAmount.default(0),
   currency: z.enum(["HKD", "USD", "CNY"]).default("HKD"),
@@ -43,7 +45,7 @@ export const quotationSchema = z.object({
 });
 
 export const purchaseOrderSchema = z.object({
-  vendor_name: safeTextRequired(200),
+  vendor_name: vendorName,
   total_amount: positiveAmount.default(0),
   currency: z.enum(["HKD", "USD", "CNY"]).default("HKD"),
   order_date: optionalDate,
@@ -59,7 +61,7 @@ export const purchaseOrderSchema = z.object({
 });
 
 export const invoiceSchema = z.object({
-  vendor_name: safeTextRequired(200),
+  vendor_name: vendorName,
   total_amount: positiveAmount.default(0),
   tax_amount: positiveAmount.default(0),
   currency: z.enum(["HKD", "USD", "CNY"]).default("HKD"),
@@ -72,7 +74,7 @@ export const invoiceSchema = z.object({
 });
 
 export const goodsReceivedSchema = z.object({
-  vendor_name: safeTextRequired(200),
+  vendor_name: vendorName,
   received_date: optionalDate,
   received_by: safeText(100).optional(),
   quantity_received: z.number({ coerce: true }).int().min(0).max(999_999).optional(),

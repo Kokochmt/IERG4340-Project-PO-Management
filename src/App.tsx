@@ -12,6 +12,7 @@ import Quotations from "./pages/Quotations";
 import PurchaseOrders from "./pages/PurchaseOrders";
 import Invoices from "./pages/Invoices";
 import GoodsReceived from "./pages/GoodsReceived";
+import CompanyList from "./pages/CompanyList";
 import UserManagement from "./pages/UserManagement";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
       { path: "/purchase-orders", element: <PurchaseOrders /> },
       { path: "/invoices", element: <Invoices /> },
       { path: "/goods-received", element: <GoodsReceived /> },
+      { path: "/companies", element: <CompanyList /> },
       { path: "/users", element: <UserManagement /> },
     ],
   },
