@@ -68,3 +68,16 @@ export const useGoodsReceived = () =>
       return data;
     },
   });
+
+export const useCompanies = () =>
+  useQuery({
+    queryKey: ["companies"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("companies")
+        .select("*")
+        .order("company_name", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
