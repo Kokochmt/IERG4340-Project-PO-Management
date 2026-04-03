@@ -14,6 +14,8 @@ const safeText = (max: number) =>
 const safeTextRequired = (max: number) =>
   z.string().trim().min(1, "Required").max(max).transform(sanitize);
 
+const vendorName = safeTextRequired(200).refine((v) => v !== "-", { message: "Please select a company" });
+
 const positiveAmount = z
   .number({ coerce: true })
   .min(0, "Must be non-negative")
