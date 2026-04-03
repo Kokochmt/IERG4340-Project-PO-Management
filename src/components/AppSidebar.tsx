@@ -20,6 +20,7 @@ const navItems = [
   { to: "/purchase-orders", label: "Purchase Orders", icon: ShoppingCart },
   { to: "/invoices", label: "Invoices", icon: Receipt },
   { to: "/goods-received", label: "Goods Received", icon: PackageCheck },
+  { to: "/companies", label: "Company List", icon: Building2 },
 ];
 
 interface AppSidebarProps {
