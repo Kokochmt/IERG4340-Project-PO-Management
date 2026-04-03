@@ -74,7 +74,7 @@ export const invoiceSchema = z.object({
 });
 
 export const goodsReceivedSchema = z.object({
-  vendor_name: safeTextRequired(200),
+  vendor_name: vendorName,
   received_date: optionalDate,
   received_by: safeText(100).optional(),
   quantity_received: z.number({ coerce: true }).int().min(0).max(999_999).optional(),
