@@ -45,7 +45,7 @@ export const quotationSchema = z.object({
 });
 
 export const purchaseOrderSchema = z.object({
-  vendor_name: safeTextRequired(200),
+  vendor_name: vendorName,
   total_amount: positiveAmount.default(0),
   currency: z.enum(["HKD", "USD", "CNY"]).default("HKD"),
   order_date: optionalDate,
