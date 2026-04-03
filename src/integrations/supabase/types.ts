@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      companies: {
+        Row: {
+          company_name: string
+          contact_email: string | null
+          contact_person: string | null
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          contact_email?: string | null
+          contact_person?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string | null
+          contact_person?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       goods_received: {
         Row: {
           created_at: string
