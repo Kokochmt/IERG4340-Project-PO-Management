@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   Receipt,
   PackageCheck,
+  Building2,
   LogOut,
   Users,
 } from "lucide-react";
