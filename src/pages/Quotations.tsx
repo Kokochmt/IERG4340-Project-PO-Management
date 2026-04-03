@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import RecordTable from "@/components/RecordTable";
 import FileUpload from "@/components/FileUpload";
+import CompanySelect from "@/components/CompanySelect";
 import CurrencySelect from "@/components/CurrencySelect";
 import { useQuotations } from "@/hooks/useProcurementData";
 import { useAuth } from "@/components/AuthProvider";
