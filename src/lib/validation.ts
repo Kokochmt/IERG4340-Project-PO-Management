@@ -61,7 +61,7 @@ export const purchaseOrderSchema = z.object({
 });
 
 export const invoiceSchema = z.object({
-  vendor_name: safeTextRequired(200),
+  vendor_name: vendorName,
   total_amount: positiveAmount.default(0),
   tax_amount: positiveAmount.default(0),
   currency: z.enum(["HKD", "USD", "CNY"]).default("HKD"),
