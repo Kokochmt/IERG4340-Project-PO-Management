@@ -49,7 +49,8 @@ const Requests = () => {
       return;
     }
 
-    const reqNum = `REQ-${String(data.length + 1).padStart(4, "0")}`;
+    const seq = String(data.length + 1).padStart(5, "0");
+    const reqNum = `1${seq}`;
     const { error } = await supabase.from("purchase_requests").insert({
       request_number: reqNum,
       title: result.data.title,

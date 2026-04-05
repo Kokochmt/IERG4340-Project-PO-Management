@@ -74,7 +74,8 @@ const GoodsReceived = () => {
       return;
     }
 
-    const num = `GRN-${String(data.length + 1).padStart(4, "0")}`;
+    const seq = String(data.length + 1).padStart(5, "0");
+    const num = `5${seq}`;
     const { error } = await supabase.from("goods_received").insert({
       grn_number: num,
       vendor_name: result.data.vendor_name,

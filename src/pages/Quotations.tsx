@@ -43,7 +43,8 @@ const Quotations = () => {
       return;
     }
 
-    const num = `QUO-${String(data.length + 1).padStart(4, "0")}`;
+    const seq = String(data.length + 1).padStart(5, "0");
+    const num = `2${seq}`;
     const { error } = await supabase.from("quotations").insert({
       quotation_number: num,
       vendor_name: result.data.vendor_name,
