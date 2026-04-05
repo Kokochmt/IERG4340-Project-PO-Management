@@ -48,7 +48,8 @@ const Invoices = () => {
       return;
     }
 
-    const num = `INV-${String(data.length + 1).padStart(4, "0")}`;
+    const seq = String(data.length + 1).padStart(5, "0");
+    const num = `4${seq}`;
     const { error } = await supabase.from("invoices").insert({
       invoice_number: num,
       vendor_name: result.data.vendor_name,
