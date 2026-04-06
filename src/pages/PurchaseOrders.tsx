@@ -22,7 +22,7 @@ const PurchaseOrders = () => {
   const { data: requests = [] } = usePurchaseRequests();
   const { data: quotations = [] } = useQuotations();
   const queryClient = useQueryClient();
-  const { canEdit } = useAuth();
+  const { canEdit, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
 
