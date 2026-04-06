@@ -50,12 +50,11 @@ const Requests = () => {
       description: result.data.description || null,
       requester_name: result.data.requester_name,
       department: result.data.department || null,
-      priority: result.data.priority,
-      total_amount: result.data.total_amount,
       currency: result.data.currency,
       remarks: result.data.remarks || null,
       file_url: fileUrl || null,
       status: "draft",
+      created_by: fullName || username || "Unknown",
     });
 
     if (error) { toast.error("Failed to create request"); return; }
