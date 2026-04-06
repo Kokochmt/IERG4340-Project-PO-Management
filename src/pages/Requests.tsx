@@ -28,14 +28,7 @@ const Requests = () => {
     { key: "title", label: "Title" },
     { key: "requester_name", label: "Requester", hideOnMobile: true },
     { key: "department", label: "Department", hideOnMobile: true },
-    { key: "priority", label: "Priority", hideOnMobile: true },
-    {
-      key: "total_amount",
-      label: "Amount",
-      hideOnMobile: true,
-      render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}`,
-    },
-    { key: "status", label: "Status" },
+    { key: "created_by", label: "Created By", hideOnMobile: true },
   ];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
