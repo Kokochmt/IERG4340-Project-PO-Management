@@ -300,6 +300,7 @@ const UserManagement = () => {
 const RoleBadge = ({ role }: { role: string }) => {
   const config = {
     admin: { label: "Admin", className: "bg-destructive/10 text-destructive border-destructive/20" },
+    buying_manager: { label: "Buying Manager", className: "bg-yellow-500/10 text-yellow-700 border-yellow-500/20" },
     casual_buyer: { label: "Casual Buyer", className: "bg-primary/10 text-primary border-primary/20" },
     observer: { label: "Observer", className: "bg-muted text-muted-foreground border-border" },
   }[role] ?? { label: role, className: "" };

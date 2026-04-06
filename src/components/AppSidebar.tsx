@@ -31,7 +31,7 @@ const AppSidebar = ({ onNavigate }: AppSidebarProps) => {
   const location = useLocation();
   const { username, role, isAdmin, signOut } = useAuth();
 
-  const roleLabel = role === "admin" ? "Admin" : role === "casual_buyer" ? "Casual Buyer" : role === "observer" ? "Observer" : "—";
+  const roleLabel = role === "admin" ? "Admin" : role === "buying_manager" ? "Buying Manager" : role === "casual_buyer" ? "Casual Buyer" : role === "observer" ? "Observer" : "—";
 
   return (
     <aside className="w-64 min-h-screen bg-sidebar text-sidebar-foreground flex flex-col">

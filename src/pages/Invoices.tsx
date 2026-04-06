@@ -88,29 +88,16 @@ const Invoices = () => {
               <DialogHeader><DialogTitle>New Invoice</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div><Label>Vendor Name</Label><CompanySelect /></div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Linked Request</Label>
-                    <Select name="request_id">
-                      <SelectTrigger><SelectValue placeholder="Select request..." /></SelectTrigger>
-                      <SelectContent>
-                        {requests.map((r) => (
-                          <SelectItem key={r.id} value={r.id}>{r.request_number} - {r.title}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Linked Quotation</Label>
-                    <Select name="quotation_id">
-                      <SelectTrigger><SelectValue placeholder="Select quotation..." /></SelectTrigger>
-                      <SelectContent>
-                        {quotations.map((q) => (
-                          <SelectItem key={q.id} value={q.id}>{q.quotation_number} - {q.vendor_name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div>
+                  <Label>Linked Quotation</Label>
+                  <Select name="quotation_id">
+                    <SelectTrigger><SelectValue placeholder="Select quotation..." /></SelectTrigger>
+                    <SelectContent>
+                      {quotations.map((q) => (
+                        <SelectItem key={q.id} value={q.id}>{q.quotation_number} - {q.vendor_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div><Label>Amount</Label><Input name="total_amount" type="number" step="0.01" min="0" /></div>

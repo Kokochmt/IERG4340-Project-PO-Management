@@ -64,7 +64,6 @@ export const invoiceSchema = z.object({
   due_date: optionalDate,
   notes: safeText(2000).optional(),
   remarks: safeText(2000).optional(),
-  request_id: z.string().uuid().optional().or(z.literal("")),
   quotation_id: z.string().uuid().optional().or(z.literal("")),
 });
 
