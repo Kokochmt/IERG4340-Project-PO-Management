@@ -33,6 +33,7 @@ const Invoices = () => {
     { key: "tax_amount", label: "Tax", hideOnMobile: true, render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
     { key: "invoice_date", label: "Invoice Date", hideOnMobile: true },
     { key: "due_date", label: "Due Date", hideOnMobile: true },
+    { key: "created_by", label: "Created By", hideOnMobile: true },
     { key: "status", label: "Status" },
   ];
 
