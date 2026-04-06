@@ -21,7 +21,7 @@ const GoodsReceived = () => {
   const { data: orders = [] } = usePurchaseOrders();
   const { data: invoices = [] } = useInvoices();
   const queryClient = useQueryClient();
-  const { canEdit } = useAuth();
+  const { canEdit, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
 
@@ -31,6 +31,7 @@ const GoodsReceived = () => {
     { key: "received_date", label: "Received Date", hideOnMobile: true },
     { key: "received_by", label: "Received By", hideOnMobile: true },
     { key: "quantity_received", label: "Qty", hideOnMobile: true },
+    { key: "created_by", label: "Created By", hideOnMobile: true },
     { key: "status", label: "Status" },
     {
       key: "id",
@@ -88,6 +89,7 @@ const GoodsReceived = () => {
       po_id: result.data.po_id || null,
       invoice_id: result.data.invoice_id || null,
       status: "pending",
+      created_by: fullName || username || "Unknown",
     });
 
     if (error) { toast.error("Failed to create GRN"); return; }

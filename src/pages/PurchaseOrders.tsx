@@ -22,7 +22,7 @@ const PurchaseOrders = () => {
   const { data: requests = [] } = usePurchaseRequests();
   const { data: quotations = [] } = useQuotations();
   const queryClient = useQueryClient();
-  const { canEdit } = useAuth();
+  const { canEdit, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
 
@@ -32,6 +32,7 @@ const PurchaseOrders = () => {
     { key: "total_amount", label: "Amount", hideOnMobile: true, render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
     { key: "order_date", label: "Order Date", hideOnMobile: true },
     { key: "expected_delivery", label: "Expected Delivery", hideOnMobile: true },
+    { key: "created_by", label: "Created By", hideOnMobile: true },
     { key: "status", label: "Status" },
     {
       key: "id",
@@ -94,6 +95,7 @@ const PurchaseOrders = () => {
       file_url: fileUrl || null,
       request_id: result.data.request_id || null,
       quotation_id: result.data.quotation_id || null,
+      created_by: fullName || username || "Unknown",
     });
 
     if (error) { toast.error("Failed to create PO"); return; }

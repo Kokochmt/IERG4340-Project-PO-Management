@@ -6,10 +6,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import RecordTable from "@/components/RecordTable";
 import FileUpload from "@/components/FileUpload";
-import CurrencySelect from "@/components/CurrencySelect";
+
 import { usePurchaseRequests } from "@/hooks/useProcurementData";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +19,7 @@ import { requestSchema, extractFormData } from "@/lib/validation";
 const Requests = () => {
   const { data = [], isLoading } = usePurchaseRequests();
   const queryClient = useQueryClient();
-  const { canEdit } = useAuth();
+  const { canEdit, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
 
@@ -28,14 +28,7 @@ const Requests = () => {
     { key: "title", label: "Title" },
     { key: "requester_name", label: "Requester", hideOnMobile: true },
     { key: "department", label: "Department", hideOnMobile: true },
-    { key: "priority", label: "Priority", hideOnMobile: true },
-    {
-      key: "total_amount",
-      label: "Amount",
-      hideOnMobile: true,
-      render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}`,
-    },
-    { key: "status", label: "Status" },
+    { key: "created_by", label: "Created By", hideOnMobile: true },
   ];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -57,12 +50,11 @@ const Requests = () => {
       description: result.data.description || null,
       requester_name: result.data.requester_name,
       department: result.data.department || null,
-      priority: result.data.priority,
-      total_amount: result.data.total_amount,
       currency: result.data.currency,
       remarks: result.data.remarks || null,
       file_url: fileUrl || null,
       status: "draft",
+      created_by: fullName || username || "Unknown",
     });
 
     if (error) { toast.error("Failed to create request"); return; }
@@ -89,24 +81,7 @@ const Requests = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div><Label>Title</Label><Input name="title" required maxLength={200} /></div>
                 <div><Label>Requester Name</Label><Input name="requester_name" required maxLength={100} /></div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div><Label>Department</Label><Input name="department" maxLength={100} /></div>
-                  <div>
-                    <Label>Priority</Label>
-                    <Select name="priority" defaultValue="medium">
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div><Label>Amount</Label><Input name="total_amount" type="number" step="0.01" min="0" /></div>
-                  <div><Label>Currency</Label><CurrencySelect /></div>
-                </div>
+                <div><Label>Department</Label><Input name="department" maxLength={100} /></div>
                 <div><Label>Description</Label><Textarea name="description" maxLength={2000} /></div>
                 <div><Label>Remarks</Label><Textarea name="remarks" maxLength={2000} placeholder="Additional remarks..." /></div>
                 <div><Label>Attachments</Label><FileUpload onUploaded={setFileUrl} /></div>

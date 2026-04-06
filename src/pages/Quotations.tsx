@@ -19,16 +19,17 @@ import { quotationSchema, extractFormData } from "@/lib/validation";
 const Quotations = () => {
   const { data = [], isLoading } = useQuotations();
   const queryClient = useQueryClient();
-  const { canEdit } = useAuth();
+  const { canEdit, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
 
   const columns = [
     { key: "quotation_number", label: "Quotation #" },
-    { key: "vendor_name", label: "Vendor" },
-    { key: "vendor_contact", label: "Contact", hideOnMobile: true },
+    { key: "title", label: "Title" },
+    { key: "vendor_name", label: "Vendor Company" },
     { key: "total_amount", label: "Amount", hideOnMobile: true, render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
     { key: "valid_until", label: "Valid Until", hideOnMobile: true },
+    { key: "created_by", label: "Created By", hideOnMobile: true },
     { key: "status", label: "Status" },
   ];
 
@@ -47,8 +48,8 @@ const Quotations = () => {
     const num = `2${seq}`;
     const { error } = await supabase.from("quotations").insert({
       quotation_number: num,
+      title: result.data.title || null,
       vendor_name: result.data.vendor_name,
-      vendor_contact: result.data.vendor_contact || null,
       total_amount: result.data.total_amount,
       currency: result.data.currency,
       valid_until: result.data.valid_until || null,
@@ -56,6 +57,7 @@ const Quotations = () => {
       remarks: result.data.remarks || null,
       file_url: fileUrl || null,
       status: "draft",
+      created_by: fullName || username || "Unknown",
     });
 
     if (error) { toast.error("Failed to create quotation"); return; }
@@ -80,8 +82,8 @@ const Quotations = () => {
             <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
               <DialogHeader><DialogTitle>New Quotation</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div><Label>Vendor Name</Label><CompanySelect /></div>
-                <div><Label>Vendor Contact</Label><Input name="vendor_contact" maxLength={200} /></div>
+                <div><Label>Title</Label><Input name="title" maxLength={200} /></div>
+                <div><Label>Vendor Company</Label><CompanySelect /></div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div><Label>Amount</Label><Input name="total_amount" type="number" step="0.01" min="0" /></div>
                   <div><Label>Currency</Label><CurrencySelect /></div>

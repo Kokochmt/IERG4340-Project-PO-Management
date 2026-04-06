@@ -44,6 +44,7 @@ export type Database = {
       goods_received: {
         Row: {
           created_at: string
+          created_by: string | null
           file_url: string | null
           grn_number: string
           id: string
@@ -60,6 +61,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           file_url?: string | null
           grn_number: string
           id?: string
@@ -76,6 +78,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           file_url?: string | null
           grn_number?: string
           id?: string
@@ -110,6 +113,7 @@ export type Database = {
       invoices: {
         Row: {
           created_at: string
+          created_by: string | null
           currency: string
           due_date: string | null
           file_url: string | null
@@ -129,6 +133,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           currency?: string
           due_date?: string | null
           file_url?: string | null
@@ -148,6 +153,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           currency?: string
           due_date?: string | null
           file_url?: string | null
@@ -216,6 +222,7 @@ export type Database = {
       purchase_orders: {
         Row: {
           created_at: string
+          created_by: string | null
           currency: string
           delivery_location: string | null
           expected_delivery: string | null
@@ -236,6 +243,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           currency?: string
           delivery_location?: string | null
           expected_delivery?: string | null
@@ -256,6 +264,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           currency?: string
           delivery_location?: string | null
           expected_delivery?: string | null
@@ -294,6 +303,7 @@ export type Database = {
       purchase_requests: {
         Row: {
           created_at: string
+          created_by: string | null
           currency: string
           department: string | null
           description: string | null
@@ -310,6 +320,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           currency?: string
           department?: string | null
           description?: string | null
@@ -326,6 +337,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           currency?: string
           department?: string | null
           description?: string | null
@@ -345,6 +357,7 @@ export type Database = {
       quotations: {
         Row: {
           created_at: string
+          created_by: string | null
           currency: string
           file_url: string | null
           id: string
@@ -353,6 +366,7 @@ export type Database = {
           remarks: string | null
           request_id: string | null
           status: Database["public"]["Enums"]["record_status"] | null
+          title: string | null
           total_amount: number | null
           updated_at: string
           valid_until: string | null
@@ -361,6 +375,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           currency?: string
           file_url?: string | null
           id?: string
@@ -369,6 +384,7 @@ export type Database = {
           remarks?: string | null
           request_id?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
+          title?: string | null
           total_amount?: number | null
           updated_at?: string
           valid_until?: string | null
@@ -377,6 +393,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           currency?: string
           file_url?: string | null
           id?: string
@@ -385,6 +402,7 @@ export type Database = {
           remarks?: string | null
           request_id?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
+          title?: string | null
           total_amount?: number | null
           updated_at?: string
           valid_until?: string | null
