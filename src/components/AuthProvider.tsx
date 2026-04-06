@@ -98,8 +98,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const username = user?.user_metadata?.username ?? null;
   const isAdmin = role === "admin";
+  const isBuyingManager = role === "buying_manager";
   const isCasualBuyer = role === "casual_buyer";
-  const canEdit = isAdmin || isCasualBuyer;
+  const canEdit = isAdmin || isBuyingManager || isCasualBuyer;
+  const canApprove = isAdmin || isBuyingManager;
 
   return (
     <AuthContext.Provider
