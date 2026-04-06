@@ -21,7 +21,7 @@ const GoodsReceived = () => {
   const { data: orders = [] } = usePurchaseOrders();
   const { data: invoices = [] } = useInvoices();
   const queryClient = useQueryClient();
-  const { canEdit } = useAuth();
+  const { canEdit, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
 
