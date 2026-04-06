@@ -26,6 +26,7 @@ import { Shield, User, Eye, Save, Trash2, Search, MoreVertical, ArrowUpAZ, Arrow
 const ROLE_OPTIONS = [
   { value: "observer", label: "Observer", icon: Eye },
   { value: "casual_buyer", label: "Casual Buyer", icon: User },
+  { value: "buying_manager", label: "Buying Manager", icon: Shield },
   { value: "admin", label: "Admin", icon: Shield },
 ] as const;
 
