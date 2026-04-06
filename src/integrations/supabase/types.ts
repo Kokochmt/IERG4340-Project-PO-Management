@@ -236,6 +236,9 @@ export type Database = {
           quotation_id: string | null
           remarks: string | null
           request_id: string | null
+          review_comment: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["record_status"] | null
           total_amount: number | null
           updated_at: string
@@ -257,6 +260,9 @@ export type Database = {
           quotation_id?: string | null
           remarks?: string | null
           request_id?: string | null
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           total_amount?: number | null
           updated_at?: string
@@ -278,6 +284,9 @@ export type Database = {
           quotation_id?: string | null
           remarks?: string | null
           request_id?: string | null
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
           total_amount?: number | null
           updated_at?: string
@@ -455,7 +464,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "observer" | "casual_buyer" | "admin"
+      app_role: "observer" | "casual_buyer" | "admin" | "buying_manager"
       record_status:
         | "draft"
         | "pending"
@@ -590,7 +599,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["observer", "casual_buyer", "admin"],
+      app_role: ["observer", "casual_buyer", "admin", "buying_manager"],
       record_status: [
         "draft",
         "pending",
