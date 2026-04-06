@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-type AppRole = "observer" | "casual_buyer" | "admin";
+type AppRole = "observer" | "casual_buyer" | "buying_manager" | "admin";
 
 interface AuthContextType {
   user: User | null;
@@ -10,8 +10,10 @@ interface AuthContextType {
   role: AppRole | null;
   loading: boolean;
   isCasualBuyer: boolean;
+  isBuyingManager: boolean;
   isAdmin: boolean;
   canEdit: boolean;
+  canApprove: boolean;
   username: string | null;
   fullName: string | null;
   signOut: () => Promise<void>;
@@ -23,8 +25,10 @@ const AuthContext = createContext<AuthContextType>({
   role: null,
   loading: true,
   isCasualBuyer: false,
+  isBuyingManager: false,
   isAdmin: false,
   canEdit: false,
+  canApprove: false,
   username: null,
   fullName: null,
   signOut: async () => {},
@@ -94,8 +98,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const username = user?.user_metadata?.username ?? null;
   const isAdmin = role === "admin";
+  const isBuyingManager = role === "buying_manager";
   const isCasualBuyer = role === "casual_buyer";
-  const canEdit = isAdmin || isCasualBuyer;
+  const canEdit = isAdmin || isBuyingManager || isCasualBuyer;
+  const canApprove = isAdmin || isBuyingManager;
 
   return (
     <AuthContext.Provider
@@ -105,8 +111,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         role,
         loading,
         isCasualBuyer,
+        isBuyingManager,
         isAdmin,
         canEdit,
+        canApprove,
         username,
         fullName,
         signOut,

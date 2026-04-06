@@ -48,13 +48,10 @@ export const purchaseOrderSchema = z.object({
   currency: z.enum(["HKD", "USD", "CNY"]).default("HKD"),
   order_date: optionalDate,
   expected_delivery: optionalDate,
-  status: z.enum(["draft", "pending", "approved"]).default("draft"),
   delivery_location: safeText(500).optional(),
   goods_description: safeText(2000).optional(),
-  quantity: z.number({ coerce: true }).int().min(0).max(999_999).optional(),
   notes: safeText(2000).optional(),
   remarks: safeText(2000).optional(),
-  request_id: z.string().uuid().optional().or(z.literal("")),
   quotation_id: z.string().uuid().optional().or(z.literal("")),
 });
 
@@ -67,7 +64,6 @@ export const invoiceSchema = z.object({
   due_date: optionalDate,
   notes: safeText(2000).optional(),
   remarks: safeText(2000).optional(),
-  request_id: z.string().uuid().optional().or(z.literal("")),
   quotation_id: z.string().uuid().optional().or(z.literal("")),
 });
 
