@@ -27,8 +27,6 @@ export const requestSchema = z.object({
   title: safeTextRequired(200),
   requester_name: safeTextRequired(100),
   department: safeText(100).optional(),
-  priority: z.enum(["low", "medium", "high"]).default("medium"),
-  total_amount: positiveAmount.default(0),
   currency: z.enum(["HKD", "USD", "CNY"]).default("HKD"),
   description: safeText(2000).optional(),
   remarks: safeText(2000).optional(),
