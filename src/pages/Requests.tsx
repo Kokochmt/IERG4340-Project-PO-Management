@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import RecordTable from "@/components/RecordTable";
 import FileUpload from "@/components/FileUpload";
-import CurrencySelect from "@/components/CurrencySelect";
+
 import { usePurchaseRequests } from "@/hooks/useProcurementData";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
