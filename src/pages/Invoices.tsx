@@ -19,7 +19,6 @@ import { invoiceSchema, extractFormData } from "@/lib/validation";
 
 const Invoices = () => {
   const { data = [], isLoading } = useInvoices();
-  const { data: requests = [] } = usePurchaseRequests();
   const { data: quotations = [] } = useQuotations();
   const queryClient = useQueryClient();
   const { canEdit, fullName, username } = useAuth();
