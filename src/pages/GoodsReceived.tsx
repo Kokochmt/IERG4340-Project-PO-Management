@@ -89,6 +89,7 @@ const GoodsReceived = () => {
       po_id: result.data.po_id || null,
       invoice_id: result.data.invoice_id || null,
       status: "pending",
+      created_by: fullName || username || "Unknown",
     });
 
     if (error) { toast.error("Failed to create GRN"); return; }

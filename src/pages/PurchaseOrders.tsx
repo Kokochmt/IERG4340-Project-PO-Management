@@ -95,6 +95,7 @@ const PurchaseOrders = () => {
       file_url: fileUrl || null,
       request_id: result.data.request_id || null,
       quotation_id: result.data.quotation_id || null,
+      created_by: fullName || username || "Unknown",
     });
 
     if (error) { toast.error("Failed to create PO"); return; }

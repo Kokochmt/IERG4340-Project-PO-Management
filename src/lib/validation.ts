@@ -33,8 +33,8 @@ export const requestSchema = z.object({
 });
 
 export const quotationSchema = z.object({
+  title: safeText(200).optional(),
   vendor_name: vendorName,
-  vendor_contact: safeText(200).optional(),
   total_amount: positiveAmount.default(0),
   currency: z.enum(["HKD", "USD", "CNY"]).default("HKD"),
   valid_until: optionalDate,

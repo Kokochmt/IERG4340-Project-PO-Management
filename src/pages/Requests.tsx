@@ -81,24 +81,7 @@ const Requests = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div><Label>Title</Label><Input name="title" required maxLength={200} /></div>
                 <div><Label>Requester Name</Label><Input name="requester_name" required maxLength={100} /></div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div><Label>Department</Label><Input name="department" maxLength={100} /></div>
-                  <div>
-                    <Label>Priority</Label>
-                    <Select name="priority" defaultValue="medium">
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div><Label>Amount</Label><Input name="total_amount" type="number" step="0.01" min="0" /></div>
-                  <div><Label>Currency</Label><CurrencySelect /></div>
-                </div>
+                <div><Label>Department</Label><Input name="department" maxLength={100} /></div>
                 <div><Label>Description</Label><Textarea name="description" maxLength={2000} /></div>
                 <div><Label>Remarks</Label><Textarea name="remarks" maxLength={2000} placeholder="Additional remarks..." /></div>
                 <div><Label>Attachments</Label><FileUpload onUploaded={setFileUrl} /></div>

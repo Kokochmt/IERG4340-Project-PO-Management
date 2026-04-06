@@ -63,6 +63,7 @@ const Invoices = () => {
       remarks: result.data.remarks || null,
       file_url: fileUrl || null,
       status: "draft",
+      created_by: fullName || username || "Unknown",
     });
 
     if (error) { toast.error("Failed to create invoice"); return; }
