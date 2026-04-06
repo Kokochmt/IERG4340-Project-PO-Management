@@ -11,7 +11,7 @@ import RecordTable from "@/components/RecordTable";
 import FileUpload from "@/components/FileUpload";
 import CompanySelect from "@/components/CompanySelect";
 import CurrencySelect from "@/components/CurrencySelect";
-import { useInvoices, usePurchaseRequests, useQuotations } from "@/hooks/useProcurementData";
+import { useInvoices, useQuotations } from "@/hooks/useProcurementData";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
