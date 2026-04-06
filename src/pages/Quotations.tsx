@@ -19,7 +19,7 @@ import { quotationSchema, extractFormData } from "@/lib/validation";
 const Quotations = () => {
   const { data = [], isLoading } = useQuotations();
   const queryClient = useQueryClient();
-  const { canEdit } = useAuth();
+  const { canEdit, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
 
