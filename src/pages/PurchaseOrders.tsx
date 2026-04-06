@@ -32,6 +32,7 @@ const PurchaseOrders = () => {
     { key: "total_amount", label: "Amount", hideOnMobile: true, render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
     { key: "order_date", label: "Order Date", hideOnMobile: true },
     { key: "expected_delivery", label: "Expected Delivery", hideOnMobile: true },
+    { key: "created_by", label: "Created By", hideOnMobile: true },
     { key: "status", label: "Status" },
     {
       key: "id",
