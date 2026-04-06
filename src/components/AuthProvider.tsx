@@ -10,8 +10,10 @@ interface AuthContextType {
   role: AppRole | null;
   loading: boolean;
   isCasualBuyer: boolean;
+  isBuyingManager: boolean;
   isAdmin: boolean;
   canEdit: boolean;
+  canApprove: boolean;
   username: string | null;
   fullName: string | null;
   signOut: () => Promise<void>;
