@@ -48,8 +48,8 @@ const Quotations = () => {
     const num = `2${seq}`;
     const { error } = await supabase.from("quotations").insert({
       quotation_number: num,
+      title: result.data.title || null,
       vendor_name: result.data.vendor_name,
-      vendor_contact: result.data.vendor_contact || null,
       total_amount: result.data.total_amount,
       currency: result.data.currency,
       valid_until: result.data.valid_until || null,
@@ -57,6 +57,7 @@ const Quotations = () => {
       remarks: result.data.remarks || null,
       file_url: fileUrl || null,
       status: "draft",
+      created_by: fullName || username || "Unknown",
     });
 
     if (error) { toast.error("Failed to create quotation"); return; }
