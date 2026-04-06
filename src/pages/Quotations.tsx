@@ -25,10 +25,11 @@ const Quotations = () => {
 
   const columns = [
     { key: "quotation_number", label: "Quotation #" },
-    { key: "vendor_name", label: "Vendor" },
-    { key: "vendor_contact", label: "Contact", hideOnMobile: true },
+    { key: "title", label: "Title" },
+    { key: "vendor_name", label: "Vendor Company" },
     { key: "total_amount", label: "Amount", hideOnMobile: true, render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
     { key: "valid_until", label: "Valid Until", hideOnMobile: true },
+    { key: "created_by", label: "Created By", hideOnMobile: true },
     { key: "status", label: "Status" },
   ];
 
