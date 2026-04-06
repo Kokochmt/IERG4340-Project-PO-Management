@@ -19,7 +19,7 @@ import { requestSchema, extractFormData } from "@/lib/validation";
 const Requests = () => {
   const { data = [], isLoading } = usePurchaseRequests();
   const queryClient = useQueryClient();
-  const { canEdit } = useAuth();
+  const { canEdit, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
 
