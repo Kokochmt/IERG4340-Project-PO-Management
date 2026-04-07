@@ -163,7 +163,7 @@ const RecordTable = ({ columns, data, loading, emptyMessage = "No records found"
               </TableRow>
             ) : (
               processedData.map((row, i) => (
-                <TableRow key={row.id || i}>
+                <TableRow key={row.id || i} className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""} onClick={() => onRowClick?.(row)}>
                   {columns.map((col) => (
                     <TableCell
                       key={col.key}
