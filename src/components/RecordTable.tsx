@@ -31,6 +31,7 @@ interface RecordTableProps {
   data: any[];
   loading?: boolean;
   emptyMessage?: string;
+  onRowClick?: (row: any) => void;
 }
 
 type SortDir = "asc" | "desc" | null;
