@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import RecordTable from "@/components/RecordTable";
+import RecordDetailDialog from "@/components/RecordDetailDialog";
 import FileUpload from "@/components/FileUpload";
 import CompanySelect from "@/components/CompanySelect";
 import { useGoodsReceived, usePurchaseOrders, useInvoices } from "@/hooks/useProcurementData";
@@ -24,6 +25,7 @@ const GoodsReceived = () => {
   const { canEdit, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
+  const [detailRecord, setDetailRecord] = useState<any>(null);
 
   const columns = [
     { key: "grn_number", label: "GRN #" },
@@ -37,11 +39,25 @@ const GoodsReceived = () => {
       key: "id",
       label: "PDF",
       render: (_: any, row: any) => (
-        <Button variant="ghost" size="sm" onClick={() => generatePdf(row.id)}>
+        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); generatePdf(row.id); }}>
           <FileDown className="h-4 w-4" />
         </Button>
       ),
     },
+  ];
+
+  const detailFields = [
+    { key: "grn_number", label: "GRN #" },
+    { key: "vendor_name", label: "Vendor" },
+    { key: "received_date", label: "Received Date" },
+    { key: "received_by", label: "Received By" },
+    { key: "quantity_received", label: "Quantity Received" },
+    { key: "notes", label: "Notes" },
+    { key: "remarks", label: "Remarks" },
+    { key: "status", label: "Status" },
+    { key: "created_by", label: "Created By" },
+    { key: "created_at", label: "Created At", render: (v: string) => v ? new Date(v).toLocaleString() : "—" },
+    { key: "file_url", label: "Attachment", render: (v: string) => v ? <a href={v} target="_blank" rel="noopener noreferrer" className="text-primary underline">View File</a> : "—" },
   ];
 
   const generatePdf = async (grnId: string) => {
@@ -153,7 +169,14 @@ const GoodsReceived = () => {
           </Dialog>
         )}
       </div>
-      <RecordTable columns={columns} data={data} loading={isLoading} />
+      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} />
+      <RecordDetailDialog
+        open={!!detailRecord}
+        onOpenChange={(open) => !open && setDetailRecord(null)}
+        record={detailRecord}
+        title="Goods Received Detail"
+        fields={detailFields}
+      />
     </div>
   );
 };

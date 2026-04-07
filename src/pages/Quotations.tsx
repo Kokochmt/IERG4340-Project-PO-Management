@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import RecordTable from "@/components/RecordTable";
+import RecordDetailDialog from "@/components/RecordDetailDialog";
 import FileUpload from "@/components/FileUpload";
 import CompanySelect from "@/components/CompanySelect";
 import CurrencySelect from "@/components/CurrencySelect";
@@ -22,6 +23,7 @@ const Quotations = () => {
   const { canEdit, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
+  const [detailRecord, setDetailRecord] = useState<any>(null);
 
   const columns = [
     { key: "quotation_number", label: "Quotation #" },
@@ -31,6 +33,21 @@ const Quotations = () => {
     { key: "valid_until", label: "Valid Until", hideOnMobile: true },
     { key: "created_by", label: "Created By", hideOnMobile: true },
     { key: "status", label: "Status" },
+  ];
+
+  const detailFields = [
+    { key: "quotation_number", label: "Quotation #" },
+    { key: "title", label: "Title" },
+    { key: "vendor_name", label: "Vendor Company" },
+    { key: "total_amount", label: "Amount", render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
+    { key: "currency", label: "Currency" },
+    { key: "valid_until", label: "Valid Until" },
+    { key: "notes", label: "Notes" },
+    { key: "remarks", label: "Remarks" },
+    { key: "status", label: "Status" },
+    { key: "created_by", label: "Created By" },
+    { key: "created_at", label: "Created At", render: (v: string) => v ? new Date(v).toLocaleString() : "—" },
+    { key: "file_url", label: "Attachment", render: (v: string) => v ? <a href={v} target="_blank" rel="noopener noreferrer" className="text-primary underline">View File</a> : "—" },
   ];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -98,7 +115,14 @@ const Quotations = () => {
           </Dialog>
         )}
       </div>
-      <RecordTable columns={columns} data={data} loading={isLoading} />
+      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} />
+      <RecordDetailDialog
+        open={!!detailRecord}
+        onOpenChange={(open) => !open && setDetailRecord(null)}
+        record={detailRecord}
+        title="Quotation Detail"
+        fields={detailFields}
+      />
     </div>
   );
 };

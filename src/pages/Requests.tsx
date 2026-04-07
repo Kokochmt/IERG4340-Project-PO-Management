@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 import RecordTable from "@/components/RecordTable";
+import RecordDetailDialog from "@/components/RecordDetailDialog";
 import FileUpload from "@/components/FileUpload";
 
 import { usePurchaseRequests } from "@/hooks/useProcurementData";
@@ -22,6 +23,7 @@ const Requests = () => {
   const { canEdit, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
+  const [detailRecord, setDetailRecord] = useState<any>(null);
 
   const columns = [
     { key: "request_number", label: "Request #" },
@@ -29,6 +31,19 @@ const Requests = () => {
     { key: "requester_name", label: "Requester", hideOnMobile: true },
     { key: "department", label: "Department", hideOnMobile: true },
     { key: "created_by", label: "Created By", hideOnMobile: true },
+  ];
+
+  const detailFields = [
+    { key: "request_number", label: "Request #" },
+    { key: "title", label: "Title" },
+    { key: "requester_name", label: "Requester" },
+    { key: "department", label: "Department" },
+    { key: "description", label: "Description" },
+    { key: "currency", label: "Currency" },
+    { key: "remarks", label: "Remarks" },
+    { key: "created_by", label: "Created By" },
+    { key: "created_at", label: "Created At", render: (v: string) => v ? new Date(v).toLocaleString() : "—" },
+    { key: "file_url", label: "Attachment", render: (v: string) => v ? <a href={v} target="_blank" rel="noopener noreferrer" className="text-primary underline">View File</a> : "—" },
   ];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -91,7 +106,14 @@ const Requests = () => {
           </Dialog>
         )}
       </div>
-      <RecordTable columns={columns} data={data} loading={isLoading} />
+      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} />
+      <RecordDetailDialog
+        open={!!detailRecord}
+        onOpenChange={(open) => !open && setDetailRecord(null)}
+        record={detailRecord}
+        title="Purchase Request Detail"
+        fields={detailFields}
+      />
     </div>
   );
 };

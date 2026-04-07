@@ -229,7 +229,7 @@ const UserManagement = () => {
                         </div>
                       ) : (
                         <Select value={displayRole} onValueChange={(val) => handleRoleChange(u.id, u.role, val)}>
-                          <SelectTrigger className="w-[140px] h-8"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="w-[160px] h-8"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             {ROLE_OPTIONS.map((r) => (
                               <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
