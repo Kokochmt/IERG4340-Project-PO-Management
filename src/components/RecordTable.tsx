@@ -31,11 +31,12 @@ interface RecordTableProps {
   data: any[];
   loading?: boolean;
   emptyMessage?: string;
+  onRowClick?: (row: any) => void;
 }
 
 type SortDir = "asc" | "desc" | null;
 
-const RecordTable = ({ columns, data, loading, emptyMessage = "No records found" }: RecordTableProps) => {
+const RecordTable = ({ columns, data, loading, emptyMessage = "No records found", onRowClick }: RecordTableProps) => {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>(null);
@@ -162,7 +163,7 @@ const RecordTable = ({ columns, data, loading, emptyMessage = "No records found"
               </TableRow>
             ) : (
               processedData.map((row, i) => (
-                <TableRow key={row.id || i}>
+                <TableRow key={row.id || i} className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""} onClick={() => onRowClick?.(row)}>
                   {columns.map((col) => (
                     <TableCell
                       key={col.key}

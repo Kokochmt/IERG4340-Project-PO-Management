@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import RecordTable from "@/components/RecordTable";
+import RecordDetailDialog from "@/components/RecordDetailDialog";
 import FileUpload from "@/components/FileUpload";
 import CompanySelect from "@/components/CompanySelect";
 import CurrencySelect from "@/components/CurrencySelect";
@@ -17,7 +18,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { purchaseOrderSchema, extractFormData } from "@/lib/validation";
 
-// Approximate exchange rates to HKD
 const TO_HKD: Record<string, number> = { HKD: 1, USD: 7.8, CNY: 1.08 };
 
 const needsApproval = (amount: number, currency: string) => {
@@ -35,6 +35,7 @@ const PurchaseOrders = () => {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewPO, setReviewPO] = useState<any>(null);
   const [reviewComment, setReviewComment] = useState("");
+  const [detailRecord, setDetailRecord] = useState<any>(null);
 
   const columns = [
     { key: "po_number", label: "PO #" },
@@ -51,7 +52,8 @@ const PurchaseOrders = () => {
         return (
           <span
             className={isPending && canApprove ? "cursor-pointer underline text-yellow-600 font-medium" : ""}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               if (isPending && canApprove && !row.reviewed_at) {
                 setReviewPO(row);
                 setReviewComment("");
@@ -68,11 +70,31 @@ const PurchaseOrders = () => {
       key: "id",
       label: "PDF",
       render: (_: any, row: any) => (
-        <Button variant="ghost" size="sm" onClick={() => generatePdf(row.id)}>
+        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); generatePdf(row.id); }}>
           <FileDown className="h-4 w-4" />
         </Button>
       ),
     },
+  ];
+
+  const detailFields = [
+    { key: "po_number", label: "PO #" },
+    { key: "vendor_name", label: "Vendor" },
+    { key: "total_amount", label: "Total Amount", render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
+    { key: "currency", label: "Currency" },
+    { key: "order_date", label: "Order Date" },
+    { key: "expected_delivery", label: "Expected Delivery" },
+    { key: "delivery_location", label: "Delivery Location" },
+    { key: "goods_description", label: "Goods Description" },
+    { key: "notes", label: "Notes" },
+    { key: "remarks", label: "Remarks" },
+    { key: "status", label: "Status" },
+    { key: "created_by", label: "Created By" },
+    { key: "reviewed_by", label: "Reviewed By" },
+    { key: "review_comment", label: "Review Comment" },
+    { key: "reviewed_at", label: "Reviewed At", render: (v: string) => v ? new Date(v).toLocaleString() : "—" },
+    { key: "created_at", label: "Created At", render: (v: string) => v ? new Date(v).toLocaleString() : "—" },
+    { key: "file_url", label: "Attachment", render: (v: string) => v ? <a href={v} target="_blank" rel="noopener noreferrer" className="text-primary underline">View File</a> : "—" },
   ];
 
   const generatePdf = async (poId: string) => {
@@ -107,10 +129,7 @@ const PurchaseOrders = () => {
         reviewed_at: new Date().toISOString(),
       })
       .eq("id", reviewPO.id);
-    if (error) {
-      toast.error("Failed to update PO");
-      return;
-    }
+    if (error) { toast.error("Failed to update PO"); return; }
     toast.success(`PO ${decision}`);
     queryClient.invalidateQueries({ queryKey: ["purchase_orders"] });
     setReviewOpen(false);
@@ -130,7 +149,6 @@ const PurchaseOrders = () => {
 
     const amount = result.data.total_amount;
     const currency = result.data.currency;
-    // If creator is buying_manager or admin, auto-approve; otherwise check threshold
     let status: string;
     if (canApprove) {
       status = "approved";
@@ -212,9 +230,15 @@ const PurchaseOrders = () => {
           </Dialog>
         )}
       </div>
-      <RecordTable columns={columns} data={data} loading={isLoading} />
+      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} />
+      <RecordDetailDialog
+        open={!!detailRecord}
+        onOpenChange={(open) => !open && setDetailRecord(null)}
+        record={detailRecord}
+        title="Purchase Order Detail"
+        fields={detailFields}
+      />
 
-      {/* Review Dialog */}
       <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Review Purchase Order</DialogTitle></DialogHeader>

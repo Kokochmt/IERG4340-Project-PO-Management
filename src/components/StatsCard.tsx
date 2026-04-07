@@ -1,16 +1,23 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface StatsCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
   description?: string;
+  to?: string;
 }
 
-const StatsCard = ({ title, value, icon: Icon, description }: StatsCardProps) => {
+const StatsCard = ({ title, value, icon: Icon, description, to }: StatsCardProps) => {
+  const navigate = useNavigate();
+
   return (
-    <Card>
+    <Card
+      className={to ? "cursor-pointer hover:shadow-md transition-shadow" : ""}
+      onClick={() => to && navigate(to)}
+    >
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
