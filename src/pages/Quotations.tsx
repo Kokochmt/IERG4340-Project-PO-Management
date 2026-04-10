@@ -20,10 +20,12 @@ import { quotationSchema, extractFormData } from "@/lib/validation";
 const Quotations = () => {
   const { data = [], isLoading } = useQuotations();
   const queryClient = useQueryClient();
-  const { canEdit, fullName, username } = useAuth();
+  const { canEdit, isAdmin, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
   const [detailRecord, setDetailRecord] = useState<any>(null);
+
+  const createdBy = fullName || username || "";
 
   const columns = [
     { key: "quotation_number", label: "Quotation #" },
@@ -49,6 +51,15 @@ const Quotations = () => {
     { key: "created_at", label: "Created At", render: (v: string) => v ? new Date(v).toLocaleString() : "—" },
     { key: "file_url", label: "Attachment", render: (v: string) => v ? <a href={v} target="_blank" rel="noopener noreferrer" className="text-primary underline">View File</a> : "—" },
   ];
+
+  const handleDelete = async (row: any) => {
+    const { error } = await supabase.from("quotations").delete().eq("id", row.id);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success("Quotation deleted");
+    queryClient.invalidateQueries({ queryKey: ["quotations"] });
+  };
+
+  const canDeleteRow = (row: any) => isAdmin || (canEdit && row.created_by === createdBy);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -115,7 +126,7 @@ const Quotations = () => {
           </Dialog>
         )}
       </div>
-      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} />
+      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} onDelete={canEdit ? handleDelete : undefined} canDeleteRow={canDeleteRow} />
       <RecordDetailDialog
         open={!!detailRecord}
         onOpenChange={(open) => !open && setDetailRecord(null)}

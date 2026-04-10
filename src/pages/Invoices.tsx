@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import RecordTable from "@/components/RecordTable";
 import RecordDetailDialog from "@/components/RecordDetailDialog";
 import FileUpload from "@/components/FileUpload";
-import CompanySelect from "@/components/CompanySelect";
 import CurrencySelect from "@/components/CurrencySelect";
-import { useInvoices, useQuotations } from "@/hooks/useProcurementData";
+import { useInvoices, usePurchaseOrders } from "@/hooks/useProcurementData";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -20,18 +19,49 @@ import { invoiceSchema, extractFormData } from "@/lib/validation";
 
 const Invoices = () => {
   const { data = [], isLoading } = useInvoices();
-  const { data: quotations = [] } = useQuotations();
+  const { data: orders = [] } = usePurchaseOrders();
   const queryClient = useQueryClient();
-  const { canEdit, fullName, username } = useAuth();
+  const { canEdit, isAdmin, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
   const [detailRecord, setDetailRecord] = useState<any>(null);
+
+  const [selectedPoId, setSelectedPoId] = useState("");
+  const [autoVendor, setAutoVendor] = useState("");
+  const [maxAmount, setMaxAmount] = useState<number | null>(null);
+
+  const createdBy = fullName || username || "";
+
+  useEffect(() => {
+    if (selectedPoId) {
+      const po = orders.find((o) => o.id === selectedPoId);
+      if (po) {
+        setAutoVendor(po.vendor_name);
+        // Calculate remaining amount for this PO
+        const existingTotal = data
+          .filter((inv) => inv.po_id === selectedPoId)
+          .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+        setMaxAmount(Number(po.total_amount || 0) - existingTotal);
+      }
+    } else {
+      setAutoVendor("");
+      setMaxAmount(null);
+    }
+  }, [selectedPoId, orders, data]);
+
+  useEffect(() => {
+    if (!open) {
+      setSelectedPoId("");
+      setAutoVendor("");
+      setMaxAmount(null);
+      setFileUrl("");
+    }
+  }, [open]);
 
   const columns = [
     { key: "invoice_number", label: "Invoice #" },
     { key: "vendor_name", label: "Vendor" },
     { key: "total_amount", label: "Amount", hideOnMobile: true, render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
-    { key: "tax_amount", label: "Tax", hideOnMobile: true, render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
     { key: "invoice_date", label: "Invoice Date", hideOnMobile: true },
     { key: "due_date", label: "Due Date", hideOnMobile: true },
     { key: "created_by", label: "Created By", hideOnMobile: true },
@@ -42,7 +72,6 @@ const Invoices = () => {
     { key: "invoice_number", label: "Invoice #" },
     { key: "vendor_name", label: "Vendor" },
     { key: "total_amount", label: "Amount", render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
-    { key: "tax_amount", label: "Tax Amount", render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
     { key: "currency", label: "Currency" },
     { key: "invoice_date", label: "Invoice Date" },
     { key: "due_date", label: "Due Date" },
@@ -54,16 +83,44 @@ const Invoices = () => {
     { key: "file_url", label: "Attachment", render: (v: string) => v ? <a href={v} target="_blank" rel="noopener noreferrer" className="text-primary underline">View File</a> : "—" },
   ];
 
+  const handleDelete = async (row: any) => {
+    const { error } = await supabase.from("invoices").delete().eq("id", row.id);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success("Invoice deleted");
+    queryClient.invalidateQueries({ queryKey: ["invoices"] });
+  };
+
+  const canDeleteRow = (row: any) => isAdmin || (canEdit && row.created_by === createdBy);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const raw = extractFormData(e.currentTarget);
     raw.total_amount = Number(raw.total_amount) || 0;
-    raw.tax_amount = Number(raw.tax_amount) || 0;
+    if (autoVendor) raw.vendor_name = autoVendor;
+    if (selectedPoId) raw.po_id = selectedPoId;
 
     const result = invoiceSchema.safeParse(raw);
     if (!result.success) {
       toast.error(result.error.errors[0]?.message || "Validation failed");
       return;
+    }
+
+    // Validate amount against linked PO
+    if (selectedPoId) {
+      const po = orders.find((o) => o.id === selectedPoId);
+      if (po) {
+        const poAmount = Number(po.total_amount || 0);
+        if (result.data.total_amount > poAmount) {
+          toast.error("Invoice amount cannot exceed the linked PO amount");
+          return;
+        }
+        const existingTotal = data
+          .filter((inv) => inv.po_id === selectedPoId)
+          .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+        if (existingTotal + result.data.total_amount > poAmount) {
+          toast.warning(`Warning: Total invoice amount (${(existingTotal + result.data.total_amount).toLocaleString()}) exceeds PO amount (${poAmount.toLocaleString()}). Proceeding anyway.`);
+        }
+      }
     }
 
     const seq = String(data.length + 1).padStart(5, "0");
@@ -72,13 +129,13 @@ const Invoices = () => {
       invoice_number: num,
       vendor_name: result.data.vendor_name,
       total_amount: result.data.total_amount,
-      tax_amount: result.data.tax_amount,
       currency: result.data.currency,
       invoice_date: result.data.invoice_date || null,
       due_date: result.data.due_date || null,
       notes: result.data.notes || null,
       remarks: result.data.remarks || null,
       file_url: fileUrl || null,
+      po_id: result.data.po_id || null,
       status: "draft",
       created_by: fullName || username || "Unknown",
     });
@@ -87,7 +144,6 @@ const Invoices = () => {
     toast.success("Invoice created");
     queryClient.invalidateQueries({ queryKey: ["invoices"] });
     setOpen(false);
-    setFileUrl("");
   };
 
   return (
@@ -105,21 +161,33 @@ const Invoices = () => {
             <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
               <DialogHeader><DialogTitle>New Invoice</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div><Label>Vendor Name</Label><CompanySelect /></div>
                 <div>
-                  <Label>Linked Quotation</Label>
-                  <Select name="quotation_id">
-                    <SelectTrigger><SelectValue placeholder="Select quotation..." /></SelectTrigger>
+                  <Label>Linked PO</Label>
+                  <Select name="po_id" value={selectedPoId} onValueChange={setSelectedPoId}>
+                    <SelectTrigger><SelectValue placeholder="Select PO..." /></SelectTrigger>
                     <SelectContent>
-                      {quotations.map((q) => (
-                        <SelectItem key={q.id} value={q.id}>{q.quotation_number} - {q.vendor_name}</SelectItem>
+                      {orders.map((o) => (
+                        <SelectItem key={o.id} value={o.id}>{o.po_number} - {o.vendor_name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div><Label>Amount</Label><Input name="total_amount" type="number" step="0.01" min="0" /></div>
-                  <div><Label>Tax Amount</Label><Input name="tax_amount" type="number" step="0.01" min="0" /></div>
+                <div>
+                  <Label>Vendor Company</Label>
+                  {selectedPoId ? (
+                    <>
+                      <Input value={autoVendor} readOnly className="bg-muted" />
+                      <input type="hidden" name="vendor_name" value={autoVendor} />
+                    </>
+                  ) : (
+                    <Input name="vendor_name" required maxLength={200} />
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Amount{maxAmount !== null && <span className="text-xs text-muted-foreground ml-1">(max: {maxAmount.toLocaleString()})</span>}</Label>
+                    <Input name="total_amount" type="number" step="0.01" min="0" max={maxAmount !== null ? maxAmount : undefined} />
+                  </div>
                   <div><Label>Currency</Label><CurrencySelect /></div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -135,7 +203,7 @@ const Invoices = () => {
           </Dialog>
         )}
       </div>
-      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} />
+      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} onDelete={canEdit ? handleDelete : undefined} canDeleteRow={canDeleteRow} />
       <RecordDetailDialog
         open={!!detailRecord}
         onOpenChange={(open) => !open && setDetailRecord(null)}

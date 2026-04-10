@@ -1,8 +1,11 @@
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FileText, FileSearch, ShoppingCart, Receipt, PackageCheck } from "lucide-react";
+import { FileText, FileSearch, ShoppingCart, Receipt, PackageCheck, Search, X } from "lucide-react";
 import StatsCard from "@/components/StatsCard";
 import StatusBadge from "@/components/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/components/AuthProvider";
 import {
   usePurchaseRequests,
@@ -11,7 +14,6 @@ import {
   useInvoices,
   useGoodsReceived,
 } from "@/hooks/useProcurementData";
-import { useMemo } from "react";
 
 const Dashboard = () => {
   const { fullName, username } = useAuth();
@@ -22,6 +24,10 @@ const Dashboard = () => {
   const { data: grns = [] } = useGoodsReceived();
   const navigate = useNavigate();
 
+  const [search, setSearch] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
   const displayName = fullName || username || "User";
   const createdBy = fullName || username || "";
 
@@ -31,11 +37,93 @@ const Dashboard = () => {
   const myInvoices = useMemo(() => invoices.filter((i) => i.created_by === createdBy), [invoices, createdBy]);
   const myGrns = useMemo(() => grns.filter((g) => g.created_by === createdBy), [grns, createdBy]);
 
+  // Global search results
+  const searchResults = useMemo(() => {
+    if (!search.trim()) return [];
+    const term = search.toLowerCase();
+    const results: { type: string; route: string; id: string; number: string; company: string }[] = [];
+
+    requests.forEach((r) => {
+      if (r.request_number?.toLowerCase().includes(term) || r.requester_name?.toLowerCase().includes(term))
+        results.push({ type: "Request", route: "/requests", id: r.id, number: r.request_number, company: r.requester_name || "" });
+    });
+    quotations.forEach((q) => {
+      if (q.quotation_number?.toLowerCase().includes(term) || q.vendor_name?.toLowerCase().includes(term))
+        results.push({ type: "Quotation", route: "/quotations", id: q.id, number: q.quotation_number, company: q.vendor_name });
+    });
+    orders.forEach((o) => {
+      if (o.po_number?.toLowerCase().includes(term) || o.vendor_name?.toLowerCase().includes(term))
+        results.push({ type: "PO", route: "/purchase-orders", id: o.id, number: o.po_number, company: o.vendor_name });
+    });
+    invoices.forEach((i) => {
+      if (i.invoice_number?.toLowerCase().includes(term) || i.vendor_name?.toLowerCase().includes(term))
+        results.push({ type: "Invoice", route: "/invoices", id: i.id, number: i.invoice_number, company: i.vendor_name });
+    });
+    grns.forEach((g) => {
+      if (g.grn_number?.toLowerCase().includes(term) || g.vendor_name?.toLowerCase().includes(term))
+        results.push({ type: "GRN", route: "/goods-received", id: g.id, number: g.grn_number, company: g.vendor_name });
+    });
+
+    return results;
+  }, [search, requests, quotations, orders, invoices, grns]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchFocused(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Welcome, {displayName}</h1>
-        <p className="text-muted-foreground mt-1">Overview of your procurement activity</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Welcome, {displayName}</h1>
+          <p className="text-muted-foreground mt-1">Overview of your procurement activity</p>
+        </div>
+        {/* Global search */}
+        <div ref={searchRef} className="relative w-full sm:max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by ID or company name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            className="pl-9 pr-8"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          )}
+          {searchFocused && search.trim() && (
+            <div className="absolute z-50 top-full mt-1 w-full bg-popover border rounded-lg shadow-lg">
+              <ScrollArea className="max-h-72">
+                {searchResults.length === 0 ? (
+                  <p className="text-sm text-muted-foreground p-4 text-center">No results found</p>
+                ) : (
+                  <div className="p-1">
+                    {searchResults.map((r) => (
+                      <div
+                        key={`${r.type}-${r.id}`}
+                        className="flex items-center justify-between px-3 py-2 rounded cursor-pointer hover:bg-muted text-sm"
+                        onClick={() => { navigate(r.route); setSearch(""); setSearchFocused(false); }}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">{r.type}</span>
+                          <span className="font-medium truncate">{r.number}</span>
+                        </div>
+                        <span className="text-muted-foreground truncate ml-2">{r.company}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">

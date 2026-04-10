@@ -22,10 +22,12 @@ const GoodsReceived = () => {
   const { data: orders = [] } = usePurchaseOrders();
   const { data: invoices = [] } = useInvoices();
   const queryClient = useQueryClient();
-  const { canEdit, fullName, username } = useAuth();
+  const { canEdit, isAdmin, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
   const [detailRecord, setDetailRecord] = useState<any>(null);
+
+  const createdBy = fullName || username || "";
 
   const columns = [
     { key: "grn_number", label: "GRN #" },
@@ -38,6 +40,7 @@ const GoodsReceived = () => {
     {
       key: "id",
       label: "PDF",
+      sortable: false,
       render: (_: any, row: any) => (
         <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); generatePdf(row.id); }}>
           <FileDown className="h-4 w-4" />
@@ -79,6 +82,15 @@ const GoodsReceived = () => {
       toast.error("Failed to generate PDF");
     }
   };
+
+  const handleDelete = async (row: any) => {
+    const { error } = await supabase.from("goods_received").delete().eq("id", row.id);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success("GRN deleted");
+    queryClient.invalidateQueries({ queryKey: ["goods_received"] });
+  };
+
+  const canDeleteRow = (row: any) => isAdmin || (canEdit && row.created_by === createdBy);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -169,7 +181,7 @@ const GoodsReceived = () => {
           </Dialog>
         )}
       </div>
-      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} />
+      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} onDelete={canEdit ? handleDelete : undefined} canDeleteRow={canDeleteRow} />
       <RecordDetailDialog
         open={!!detailRecord}
         onOpenChange={(open) => !open && setDetailRecord(null)}

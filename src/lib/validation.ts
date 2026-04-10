@@ -3,9 +3,9 @@ import { z } from "zod";
 // Sanitize text to prevent injection patterns
 const sanitize = (val: string) =>
   val
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "") // control chars
-    .replace(/%[0-9a-fA-F]{2}/g, "") // percent-encoded
-    .replace(/\n{3,}/g, "\n\n") // excessive newlines
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
+    .replace(/%[0-9a-fA-F]{2}/g, "")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 
 const safeText = (max: number) =>
@@ -58,13 +58,12 @@ export const purchaseOrderSchema = z.object({
 export const invoiceSchema = z.object({
   vendor_name: vendorName,
   total_amount: positiveAmount.default(0),
-  tax_amount: positiveAmount.default(0),
   currency: z.enum(["HKD", "USD", "CNY"]).default("HKD"),
   invoice_date: optionalDate,
   due_date: optionalDate,
   notes: safeText(2000).optional(),
   remarks: safeText(2000).optional(),
-  quotation_id: z.string().uuid().optional().or(z.literal("")),
+  po_id: z.string().uuid().optional().or(z.literal("")),
 });
 
 export const goodsReceivedSchema = z.object({
