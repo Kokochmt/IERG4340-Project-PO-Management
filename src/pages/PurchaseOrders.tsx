@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, FileDown, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,13 +29,43 @@ const PurchaseOrders = () => {
   const { data = [], isLoading } = usePurchaseOrders();
   const { data: quotations = [] } = useQuotations();
   const queryClient = useQueryClient();
-  const { canEdit, canApprove, fullName, username } = useAuth();
+  const { canEdit, canApprove, isAdmin, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewPO, setReviewPO] = useState<any>(null);
   const [reviewComment, setReviewComment] = useState("");
   const [detailRecord, setDetailRecord] = useState<any>(null);
+
+  // Auto-fill state from linked quotation
+  const [selectedQuotationId, setSelectedQuotationId] = useState("");
+  const [autoVendor, setAutoVendor] = useState("");
+  const [autoAmount, setAutoAmount] = useState("");
+  const [autoCurrency, setAutoCurrency] = useState("HKD");
+
+  const createdBy = fullName || username || "";
+
+  useEffect(() => {
+    if (selectedQuotationId) {
+      const q = quotations.find((q) => q.id === selectedQuotationId);
+      if (q) {
+        setAutoVendor(q.vendor_name);
+        setAutoAmount(String(q.total_amount || 0));
+        setAutoCurrency(q.currency || "HKD");
+      }
+    }
+  }, [selectedQuotationId, quotations]);
+
+  // Reset form state when dialog opens/closes
+  useEffect(() => {
+    if (!open) {
+      setSelectedQuotationId("");
+      setAutoVendor("");
+      setAutoAmount("");
+      setAutoCurrency("HKD");
+      setFileUrl("");
+    }
+  }, [open]);
 
   const columns = [
     { key: "po_number", label: "PO #" },
@@ -69,6 +99,7 @@ const PurchaseOrders = () => {
     {
       key: "id",
       label: "PDF",
+      sortable: false,
       render: (_: any, row: any) => (
         <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); generatePdf(row.id); }}>
           <FileDown className="h-4 w-4" />
@@ -136,10 +167,24 @@ const PurchaseOrders = () => {
     setReviewPO(null);
   };
 
+  const handleDelete = async (row: any) => {
+    const { error } = await supabase.from("purchase_orders").delete().eq("id", row.id);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success("Purchase Order deleted");
+    queryClient.invalidateQueries({ queryKey: ["purchase_orders"] });
+  };
+
+  const canDeleteRow = (row: any) => isAdmin || (canEdit && row.created_by === createdBy);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const raw = extractFormData(e.currentTarget);
-    raw.total_amount = Number(raw.total_amount) || 0;
+    // Override with auto-filled values
+    if (autoVendor) raw.vendor_name = autoVendor;
+    if (autoAmount) raw.total_amount = Number(autoAmount) || 0;
+    else raw.total_amount = Number(raw.total_amount) || 0;
+    if (selectedQuotationId) raw.quotation_id = selectedQuotationId;
+    if (autoCurrency) raw.currency = autoCurrency;
 
     const result = purchaseOrderSchema.safeParse(raw);
     if (!result.success) {
@@ -181,7 +226,6 @@ const PurchaseOrders = () => {
     toast.success(status === "pending" ? "PO created — pending approval" : "Purchase Order created");
     queryClient.invalidateQueries({ queryKey: ["purchase_orders"] });
     setOpen(false);
-    setFileUrl("");
   };
 
   return (
@@ -199,10 +243,9 @@ const PurchaseOrders = () => {
             <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
               <DialogHeader><DialogTitle>New Purchase Order</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div><Label>Vendor Name</Label><CompanySelect /></div>
                 <div>
                   <Label>Linked Quotation</Label>
-                  <Select name="quotation_id">
+                  <Select name="quotation_id" value={selectedQuotationId} onValueChange={setSelectedQuotationId}>
                     <SelectTrigger><SelectValue placeholder="Select quotation..." /></SelectTrigger>
                     <SelectContent>
                       {quotations.map((q) => (
@@ -211,9 +254,38 @@ const PurchaseOrders = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label>Vendor Company</Label>
+                  {selectedQuotationId ? (
+                    <Input value={autoVendor} readOnly className="bg-muted" />
+                  ) : (
+                    <CompanySelect />
+                  )}
+                  {selectedQuotationId && <input type="hidden" name="vendor_name" value={autoVendor} />}
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div><Label>Total Amount</Label><Input name="total_amount" type="number" step="0.01" min="0" /></div>
-                  <div><Label>Currency</Label><CurrencySelect /></div>
+                  <div>
+                    <Label>Total Amount</Label>
+                    {selectedQuotationId ? (
+                      <>
+                        <Input value={autoAmount} readOnly className="bg-muted" />
+                        <input type="hidden" name="total_amount" value={autoAmount} />
+                      </>
+                    ) : (
+                      <Input name="total_amount" type="number" step="0.01" min="0" />
+                    )}
+                  </div>
+                  <div>
+                    <Label>Currency</Label>
+                    {selectedQuotationId ? (
+                      <>
+                        <Input value={autoCurrency} readOnly className="bg-muted" />
+                        <input type="hidden" name="currency" value={autoCurrency} />
+                      </>
+                    ) : (
+                      <CurrencySelect />
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div><Label>Order Date</Label><Input name="order_date" type="date" /></div>
@@ -230,7 +302,7 @@ const PurchaseOrders = () => {
           </Dialog>
         )}
       </div>
-      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} />
+      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} onDelete={canEdit ? handleDelete : undefined} canDeleteRow={canDeleteRow} />
       <RecordDetailDialog
         open={!!detailRecord}
         onOpenChange={(open) => !open && setDetailRecord(null)}

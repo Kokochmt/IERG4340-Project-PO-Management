@@ -6,11 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
 import RecordTable from "@/components/RecordTable";
 import RecordDetailDialog from "@/components/RecordDetailDialog";
 import FileUpload from "@/components/FileUpload";
-
 import { usePurchaseRequests } from "@/hooks/useProcurementData";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,10 +18,12 @@ import { requestSchema, extractFormData } from "@/lib/validation";
 const Requests = () => {
   const { data = [], isLoading } = usePurchaseRequests();
   const queryClient = useQueryClient();
-  const { canEdit, fullName, username } = useAuth();
+  const { canEdit, isAdmin, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
   const [detailRecord, setDetailRecord] = useState<any>(null);
+
+  const createdBy = fullName || username || "";
 
   const columns = [
     { key: "request_number", label: "Request #" },
@@ -45,6 +45,15 @@ const Requests = () => {
     { key: "created_at", label: "Created At", render: (v: string) => v ? new Date(v).toLocaleString() : "—" },
     { key: "file_url", label: "Attachment", render: (v: string) => v ? <a href={v} target="_blank" rel="noopener noreferrer" className="text-primary underline">View File</a> : "—" },
   ];
+
+  const handleDelete = async (row: any) => {
+    const { error } = await supabase.from("purchase_requests").delete().eq("id", row.id);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success("Request deleted");
+    queryClient.invalidateQueries({ queryKey: ["purchase_requests"] });
+  };
+
+  const canDeleteRow = (row: any) => isAdmin || (canEdit && row.created_by === createdBy);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -106,7 +115,7 @@ const Requests = () => {
           </Dialog>
         )}
       </div>
-      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} />
+      <RecordTable columns={columns} data={data} loading={isLoading} onRowClick={setDetailRecord} onDelete={canEdit ? handleDelete : undefined} canDeleteRow={canDeleteRow} />
       <RecordDetailDialog
         open={!!detailRecord}
         onOpenChange={(open) => !open && setDetailRecord(null)}
