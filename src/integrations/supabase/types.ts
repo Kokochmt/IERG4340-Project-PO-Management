@@ -45,6 +45,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          currency: string
           file_url: string | null
           grn_number: string
           id: string
@@ -56,12 +57,14 @@ export type Database = {
           received_date: string | null
           remarks: string | null
           status: Database["public"]["Enums"]["record_status"] | null
+          total_amount: number | null
           updated_at: string
           vendor_name: string
         }
         Insert: {
           created_at?: string
           created_by?: string | null
+          currency?: string
           file_url?: string | null
           grn_number: string
           id?: string
@@ -73,12 +76,14 @@ export type Database = {
           received_date?: string | null
           remarks?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
+          total_amount?: number | null
           updated_at?: string
           vendor_name: string
         }
         Update: {
           created_at?: string
           created_by?: string | null
+          currency?: string
           file_url?: string | null
           grn_number?: string
           id?: string
@@ -90,6 +95,7 @@ export type Database = {
           received_date?: string | null
           remarks?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
+          total_amount?: number | null
           updated_at?: string
           vendor_name?: string
         }
