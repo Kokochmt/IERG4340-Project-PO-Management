@@ -168,9 +168,9 @@ const Invoices = () => {
       remarks: result.data.remarks || null,
       file_url: fileUrl || null,
       po_id: result.data.po_id || null,
-      status: "received",
+      status: "pending" as any,
       created_by: fullName || username || "Unknown",
-    });
+    } as any);
 
     if (error) { toast.error("Failed to create invoice"); return; }
     toast.success("Invoice created");
