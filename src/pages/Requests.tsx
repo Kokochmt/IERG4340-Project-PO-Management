@@ -39,7 +39,6 @@ const Requests = () => {
     { key: "requester_name", label: "Requester" },
     { key: "department", label: "Department" },
     { key: "description", label: "Description" },
-    { key: "currency", label: "Currency" },
     { key: "remarks", label: "Remarks" },
     { key: "created_by", label: "Created By" },
     { key: "created_at", label: "Created At", render: (v: string) => v ? new Date(v).toLocaleString() : "—" },
@@ -58,7 +57,6 @@ const Requests = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const raw = extractFormData(e.currentTarget);
-    raw.total_amount = Number(raw.total_amount) || 0;
 
     const result = requestSchema.safeParse(raw);
     if (!result.success) {
@@ -77,7 +75,7 @@ const Requests = () => {
       currency: result.data.currency,
       remarks: result.data.remarks || null,
       file_url: fileUrl || null,
-      status: "draft",
+      status: "pending",
       created_by: fullName || username || "Unknown",
     });
 

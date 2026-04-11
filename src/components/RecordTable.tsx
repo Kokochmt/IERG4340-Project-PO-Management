@@ -121,87 +121,89 @@ const RecordTable = ({ columns, data, loading, emptyMessage = "No records found"
         />
       </div>
 
-      <div className="rounded-lg border bg-card overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {columns.map((col) => (
-                <TableHead
-                  key={col.key}
-                  className={`font-semibold ${col.hideOnMobile ? "hidden sm:table-cell" : ""}`}
-                >
-                  <div className="flex items-center gap-1">
-                    <span>{col.label}</span>
-                    {col.sortable !== false && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
-                            <MoreVertical className="h-3.5 w-3.5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                          <DropdownMenuItem onClick={() => handleSort(col.key, "asc")}>
-                            <ArrowUpAZ className="h-4 w-4 mr-2" />Sort A → Z
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleSort(col.key, "desc")}>
-                            <ArrowDownAZ className="h-4 w-4 mr-2" />Sort Z → A
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleSort(col.key, "asc")}>
-                            <ArrowUp01 className="h-4 w-4 mr-2" />Sort Low → High
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleSort(col.key, "desc")}>
-                            <ArrowDown01 className="h-4 w-4 mr-2" />Sort High → Low
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </div>
-                </TableHead>
-              ))}
-              {showDeleteCol && <TableHead className="w-10" />}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {processedData.length === 0 ? (
+      <div className="rounded-lg border bg-card overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+        <div className="min-w-[600px]">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={columns.length + (showDeleteCol ? 1 : 0)} className="text-center py-8 text-muted-foreground">
-                  {search ? "No matching records found" : emptyMessage}
-                </TableCell>
-              </TableRow>
-            ) : (
-              processedData.map((row, i) => (
-                <TableRow key={row.id || i} className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""} onClick={() => onRowClick?.(row)}>
-                  {columns.map((col) => (
-                    <TableCell
-                      key={col.key}
-                      className={col.hideOnMobile ? "hidden sm:table-cell" : ""}
-                    >
-                      {col.render
-                        ? col.render(row[col.key], row)
-                        : col.key === "status"
-                        ? <StatusBadge status={row[col.key]} />
-                        : row[col.key] ?? "—"}
-                    </TableCell>
-                  ))}
-                  {showDeleteCol && (
-                    <TableCell>
-                      {canDeleteRow?.(row) && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={(e) => { e.stopPropagation(); setDeleteRow(row); }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                {columns.map((col) => (
+                  <TableHead
+                    key={col.key}
+                    className={`font-semibold ${col.hideOnMobile ? "hidden sm:table-cell" : ""}`}
+                  >
+                    <div className="flex items-center gap-1">
+                      <span>{col.label}</span>
+                      {col.sortable !== false && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
+                              <MoreVertical className="h-3.5 w-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start">
+                            <DropdownMenuItem onClick={() => handleSort(col.key, "asc")}>
+                              <ArrowUpAZ className="h-4 w-4 mr-2" />Sort A → Z
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSort(col.key, "desc")}>
+                              <ArrowDownAZ className="h-4 w-4 mr-2" />Sort Z → A
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSort(col.key, "asc")}>
+                              <ArrowUp01 className="h-4 w-4 mr-2" />Sort Low → High
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSort(col.key, "desc")}>
+                              <ArrowDown01 className="h-4 w-4 mr-2" />Sort High → Low
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
-                    </TableCell>
-                  )}
+                    </div>
+                  </TableHead>
+                ))}
+                {showDeleteCol && <TableHead className="w-10" />}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {processedData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={columns.length + (showDeleteCol ? 1 : 0)} className="text-center py-8 text-muted-foreground">
+                    {search ? "No matching records found" : emptyMessage}
+                  </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                processedData.map((row, i) => (
+                  <TableRow key={row.id || i} className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""} onClick={() => onRowClick?.(row)}>
+                    {columns.map((col) => (
+                      <TableCell
+                        key={col.key}
+                        className={col.hideOnMobile ? "hidden sm:table-cell" : ""}
+                      >
+                        {col.render
+                          ? col.render(row[col.key], row)
+                          : col.key === "status"
+                          ? <StatusBadge status={row[col.key]} />
+                          : row[col.key] ?? "—"}
+                      </TableCell>
+                    ))}
+                    {showDeleteCol && (
+                      <TableCell>
+                        {canDeleteRow?.(row) && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-destructive hover:text-destructive"
+                            onClick={(e) => { e.stopPropagation(); setDeleteRow(row); }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       <AlertDialog open={!!deleteRow} onOpenChange={(open) => !open && setDeleteRow(null)}>

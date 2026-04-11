@@ -11,15 +11,16 @@ import RecordTable from "@/components/RecordTable";
 import RecordDetailDialog from "@/components/RecordDetailDialog";
 import FileUpload from "@/components/FileUpload";
 import CurrencySelect from "@/components/CurrencySelect";
-import { useInvoices, usePurchaseOrders } from "@/hooks/useProcurementData";
+import { useInvoices, usePurchaseOrders, useGoodsReceived } from "@/hooks/useProcurementData";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { invoiceSchema, extractFormData } from "@/lib/validation";
 
 const Invoices = () => {
-  const { data = [], isLoading } = useInvoices();
+  const { data: rawData = [], isLoading } = useInvoices();
   const { data: orders = [] } = usePurchaseOrders();
+  const { data: allGrns = [] } = useGoodsReceived();
   const queryClient = useQueryClient();
   const { canEdit, isAdmin, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
@@ -32,13 +33,35 @@ const Invoices = () => {
 
   const createdBy = fullName || username || "";
 
+  // Compute status: if linked PO and total invoiced + total GR both match PO amount => completed, else received
+  const data = useMemo(() =>
+    rawData.map((inv) => {
+      if (inv.po_id) {
+        const po = orders.find((o) => o.id === inv.po_id);
+        if (po) {
+          const poAmount = Number(po.total_amount || 0);
+          const totalInvoiced = rawData
+            .filter((i) => i.po_id === inv.po_id)
+            .reduce((sum, i) => sum + Number(i.total_amount || 0), 0);
+          const totalGR = allGrns
+            .filter((g) => g.po_id === inv.po_id)
+            .reduce((sum, g) => sum + Number((g as any).total_amount || 0), 0);
+          if (poAmount > 0 && totalInvoiced >= poAmount && totalGR >= poAmount) {
+            return { ...inv, status: "completed" as const };
+          }
+        }
+      }
+      return { ...inv, status: "received" as const };
+    }),
+    [rawData, orders, allGrns]
+  );
+
   useEffect(() => {
     if (selectedPoId) {
       const po = orders.find((o) => o.id === selectedPoId);
       if (po) {
         setAutoVendor(po.vendor_name);
-        // Calculate remaining amount for this PO
-        const existingTotal = data
+        const existingTotal = rawData
           .filter((inv) => inv.po_id === selectedPoId)
           .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
         setMaxAmount(Number(po.total_amount || 0) - existingTotal);
@@ -47,7 +70,7 @@ const Invoices = () => {
       setAutoVendor("");
       setMaxAmount(null);
     }
-  }, [selectedPoId, orders, data]);
+  }, [selectedPoId, orders, rawData]);
 
   useEffect(() => {
     if (!open) {
@@ -57,6 +80,11 @@ const Invoices = () => {
       setFileUrl("");
     }
   }, [open]);
+
+  const getLinkedPO = (poId: string | null) => {
+    if (!poId) return null;
+    return orders.find((o) => o.id === poId);
+  };
 
   const columns = [
     { key: "invoice_number", label: "Invoice #" },
@@ -72,9 +100,13 @@ const Invoices = () => {
     { key: "invoice_number", label: "Invoice #" },
     { key: "vendor_name", label: "Vendor" },
     { key: "total_amount", label: "Amount", render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
-    { key: "currency", label: "Currency" },
     { key: "invoice_date", label: "Invoice Date" },
     { key: "due_date", label: "Due Date" },
+    { key: "po_id", label: "Linked PO", render: (v: string) => {
+      const po = getLinkedPO(v);
+      if (!po) return "—";
+      return <span className="text-primary underline cursor-pointer">{po.po_number} - {po.vendor_name}</span>;
+    }},
     { key: "notes", label: "Notes" },
     { key: "remarks", label: "Remarks" },
     { key: "status", label: "Status" },
@@ -114,7 +146,7 @@ const Invoices = () => {
           toast.error("Invoice amount cannot exceed the linked PO amount");
           return;
         }
-        const existingTotal = data
+        const existingTotal = rawData
           .filter((inv) => inv.po_id === selectedPoId)
           .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
         if (existingTotal + result.data.total_amount > poAmount) {
@@ -123,7 +155,7 @@ const Invoices = () => {
       }
     }
 
-    const seq = String(data.length + 1).padStart(5, "0");
+    const seq = String(rawData.length + 1).padStart(5, "0");
     const num = `4${seq}`;
     const { error } = await supabase.from("invoices").insert({
       invoice_number: num,
@@ -136,7 +168,7 @@ const Invoices = () => {
       remarks: result.data.remarks || null,
       file_url: fileUrl || null,
       po_id: result.data.po_id || null,
-      status: "draft",
+      status: "received",
       created_by: fullName || username || "Unknown",
     });
 

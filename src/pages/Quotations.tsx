@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { quotationSchema, extractFormData } from "@/lib/validation";
 
+const getQuotationStatus = (validUntil: string | null): string => {
+  if (!validUntil) return "valid";
+  return new Date(validUntil) >= new Date(new Date().toDateString()) ? "valid" : "invalid";
+};
+
 const Quotations = () => {
-  const { data = [], isLoading } = useQuotations();
+  const { data: rawData = [], isLoading } = useQuotations();
   const queryClient = useQueryClient();
   const { canEdit, isAdmin, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
@@ -26,6 +31,12 @@ const Quotations = () => {
   const [detailRecord, setDetailRecord] = useState<any>(null);
 
   const createdBy = fullName || username || "";
+
+  // Compute status dynamically
+  const data = useMemo(() =>
+    rawData.map((q) => ({ ...q, status: getQuotationStatus(q.valid_until) })),
+    [rawData]
+  );
 
   const columns = [
     { key: "quotation_number", label: "Quotation #" },
@@ -42,7 +53,6 @@ const Quotations = () => {
     { key: "title", label: "Title" },
     { key: "vendor_name", label: "Vendor Company" },
     { key: "total_amount", label: "Amount", render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
-    { key: "currency", label: "Currency" },
     { key: "valid_until", label: "Valid Until" },
     { key: "notes", label: "Notes" },
     { key: "remarks", label: "Remarks" },
@@ -72,7 +82,7 @@ const Quotations = () => {
       return;
     }
 
-    const seq = String(data.length + 1).padStart(5, "0");
+    const seq = String(rawData.length + 1).padStart(5, "0");
     const num = `2${seq}`;
     const { error } = await supabase.from("quotations").insert({
       quotation_number: num,
@@ -84,7 +94,7 @@ const Quotations = () => {
       notes: result.data.notes || null,
       remarks: result.data.remarks || null,
       file_url: fileUrl || null,
-      status: "draft",
+      status: "pending",
       created_by: fullName || username || "Unknown",
     });
 
