@@ -21,6 +21,8 @@ const RecordDetailDialog = ({ open, onOpenChange, record, title = "Record Detail
         <div className="space-y-3">
           {fields.map((field) => {
             const value = record[field.key];
+            // Hide empty notes/remarks
+            if ((field.key === "notes" || field.key === "remarks") && !value) return null;
             return (
               <div key={field.key} className="flex flex-col gap-1">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{field.label}</span>

@@ -68,13 +68,13 @@ export const invoiceSchema = z.object({
 
 export const goodsReceivedSchema = z.object({
   vendor_name: vendorName,
+  total_amount: positiveAmount.default(0),
+  currency: z.enum(["HKD", "USD", "CNY"]).default("HKD"),
   received_date: optionalDate,
   received_by: safeText(100).optional(),
-  quantity_received: z.number({ coerce: true }).int().min(0).max(999_999).optional(),
   notes: safeText(2000).optional(),
   remarks: safeText(2000).optional(),
   po_id: z.string().uuid().optional().or(z.literal("")),
-  invoice_id: z.string().uuid().optional().or(z.literal("")),
 });
 
 export const extractFormData = (form: HTMLFormElement) => {

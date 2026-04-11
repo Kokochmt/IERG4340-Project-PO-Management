@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, FileDown, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import RecordDetailDialog from "@/components/RecordDetailDialog";
 import FileUpload from "@/components/FileUpload";
 import CompanySelect from "@/components/CompanySelect";
 import CurrencySelect from "@/components/CurrencySelect";
-import { usePurchaseOrders, useQuotations } from "@/hooks/useProcurementData";
+import { usePurchaseOrders, useQuotations, useInvoices, useGoodsReceived } from "@/hooks/useProcurementData";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -26,8 +26,10 @@ const needsApproval = (amount: number, currency: string) => {
 };
 
 const PurchaseOrders = () => {
-  const { data = [], isLoading } = usePurchaseOrders();
+  const { data: rawOrders = [], isLoading } = usePurchaseOrders();
   const { data: quotations = [] } = useQuotations();
+  const { data: allInvoices = [] } = useInvoices();
+  const { data: allGrns = [] } = useGoodsReceived();
   const queryClient = useQueryClient();
   const { canEdit, canApprove, isAdmin, fullName, username } = useAuth();
   const [open, setOpen] = useState(false);
@@ -37,13 +39,37 @@ const PurchaseOrders = () => {
   const [reviewComment, setReviewComment] = useState("");
   const [detailRecord, setDetailRecord] = useState<any>(null);
 
-  // Auto-fill state from linked quotation
   const [selectedQuotationId, setSelectedQuotationId] = useState("");
   const [autoVendor, setAutoVendor] = useState("");
   const [autoAmount, setAutoAmount] = useState("");
   const [autoCurrency, setAutoCurrency] = useState("HKD");
 
   const createdBy = fullName || username || "";
+
+  // Compute PO status dynamically
+  const data = useMemo(() =>
+    rawOrders.map((po) => {
+      // If rejected, keep rejected
+      if (po.status === "rejected") return po;
+      // If pending (not yet reviewed), keep pending
+      if (po.status === "pending" && !po.reviewed_at) return po;
+      // Check completion: total invoiced = PO amount AND total GR = PO amount
+      const poAmount = Number(po.total_amount || 0);
+      if (poAmount > 0 && (po.status === "approved" || po.status === "completed")) {
+        const totalInvoiced = allInvoices
+          .filter((inv) => inv.po_id === po.id)
+          .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+        const totalGR = allGrns
+          .filter((g) => g.po_id === po.id)
+          .reduce((sum, g) => sum + Number((g as any).total_amount || 0), 0);
+        if (totalInvoiced >= poAmount && totalGR >= poAmount) {
+          return { ...po, status: "completed" as const };
+        }
+      }
+      return po;
+    }),
+    [rawOrders, allInvoices, allGrns]
+  );
 
   useEffect(() => {
     if (selectedQuotationId) {
@@ -56,7 +82,6 @@ const PurchaseOrders = () => {
     }
   }, [selectedQuotationId, quotations]);
 
-  // Reset form state when dialog opens/closes
   useEffect(() => {
     if (!open) {
       setSelectedQuotationId("");
@@ -81,7 +106,7 @@ const PurchaseOrders = () => {
         const isPending = v === "pending";
         return (
           <span
-            className={isPending && canApprove ? "cursor-pointer underline text-yellow-600 font-medium" : ""}
+            className={isPending && canApprove ? "cursor-pointer underline text-warning font-medium" : ""}
             onClick={(e) => {
               e.stopPropagation();
               if (isPending && canApprove && !row.reviewed_at) {
@@ -91,7 +116,7 @@ const PurchaseOrders = () => {
               }
             }}
           >
-            {v === "pending" ? "Pending Approval" : v}
+            {v === "pending" ? "Pending Approval" : v === "completed" ? "Completed" : v === "approved" ? "Approved" : v === "rejected" ? "Rejected" : v}
           </span>
         );
       },
@@ -108,17 +133,26 @@ const PurchaseOrders = () => {
     },
   ];
 
+  const getLinkedQuotation = (qId: string | null) => {
+    if (!qId) return null;
+    return quotations.find((q) => q.id === qId);
+  };
+
   const detailFields = [
     { key: "po_number", label: "PO #" },
     { key: "vendor_name", label: "Vendor" },
     { key: "total_amount", label: "Total Amount", render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
-    { key: "currency", label: "Currency" },
     { key: "order_date", label: "Order Date" },
     { key: "expected_delivery", label: "Expected Delivery" },
     { key: "delivery_location", label: "Delivery Location" },
     { key: "goods_description", label: "Goods Description" },
     { key: "notes", label: "Notes" },
     { key: "remarks", label: "Remarks" },
+    { key: "quotation_id", label: "Linked Quotation", render: (v: string) => {
+      const q = getLinkedQuotation(v);
+      if (!q) return "—";
+      return <span className="text-primary underline cursor-pointer" onClick={() => setDetailRecord(null)}>{q.quotation_number} - {q.vendor_name}</span>;
+    }},
     { key: "status", label: "Status" },
     { key: "created_by", label: "Created By" },
     { key: "reviewed_by", label: "Reviewed By" },
@@ -179,7 +213,6 @@ const PurchaseOrders = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const raw = extractFormData(e.currentTarget);
-    // Override with auto-filled values
     if (autoVendor) raw.vendor_name = autoVendor;
     if (autoAmount) raw.total_amount = Number(autoAmount) || 0;
     else raw.total_amount = Number(raw.total_amount) || 0;
@@ -203,7 +236,7 @@ const PurchaseOrders = () => {
       status = "approved";
     }
 
-    const seq = String(data.length + 1).padStart(5, "0");
+    const seq = String(rawOrders.length + 1).padStart(5, "0");
     const num = `3${seq}`;
     const { error } = await supabase.from("purchase_orders").insert({
       po_number: num,

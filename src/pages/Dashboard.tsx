@@ -37,7 +37,6 @@ const Dashboard = () => {
   const myInvoices = useMemo(() => invoices.filter((i) => i.created_by === createdBy), [invoices, createdBy]);
   const myGrns = useMemo(() => grns.filter((g) => g.created_by === createdBy), [grns, createdBy]);
 
-  // Global search results
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
     const term = search.toLowerCase();
@@ -67,7 +66,6 @@ const Dashboard = () => {
     return results;
   }, [search, requests, quotations, orders, invoices, grns]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchFocused(false);
@@ -83,7 +81,6 @@ const Dashboard = () => {
           <h1 className="text-2xl font-bold">Welcome, {displayName}</h1>
           <p className="text-muted-foreground mt-1">Overview of your procurement activity</p>
         </div>
-        {/* Global search */}
         <div ref={searchRef} className="relative w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -156,7 +153,7 @@ const Dashboard = () => {
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                       <span className="text-sm font-medium hidden sm:inline">
-                        ${Number(po.total_amount || 0).toLocaleString()}
+                        {po.currency || "HKD"} {Number(po.total_amount || 0).toLocaleString()}
                       </span>
                       <StatusBadge status={po.status} />
                     </div>
@@ -187,7 +184,7 @@ const Dashboard = () => {
                       <p className="text-xs text-muted-foreground truncate">{grn.vendor_name}</p>
                     </div>
                     <div className="shrink-0">
-                      <StatusBadge status={grn.status} />
+                      <StatusBadge status="received" />
                     </div>
                   </div>
                 ))}
