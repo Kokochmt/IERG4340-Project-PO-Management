@@ -49,6 +49,15 @@ const PurchaseOrders = () => {
 
   const createdBy = fullName || username || "";
 
+  // Auto-open record from navigation state
+  useEffect(() => {
+    if (location.state?.openRecordId && data.length > 0) {
+      const record = data.find((r) => r.id === location.state.openRecordId);
+      if (record) setDetailRecord(record);
+      window.history.replaceState({}, "");
+    }
+  }, [location.state, data]);
+
   // Compute PO status dynamically
   const data = useMemo(() =>
     rawOrders.map((po) => {

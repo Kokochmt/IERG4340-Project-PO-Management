@@ -34,6 +34,15 @@ const Quotations = () => {
 
   const createdBy = fullName || username || "";
 
+  // Auto-open record from navigation state
+  useEffect(() => {
+    if (location.state?.openRecordId && data.length > 0) {
+      const record = data.find((r) => r.id === location.state.openRecordId);
+      if (record) setDetailRecord(record);
+      window.history.replaceState({}, "");
+    }
+  }, [location.state, data]);
+
   // Compute status dynamically
   const data = useMemo(() =>
     rawData.map((q) => ({ ...q, status: getQuotationStatus(q.valid_until) })),
