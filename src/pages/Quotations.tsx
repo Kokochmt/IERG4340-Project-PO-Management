@@ -34,6 +34,12 @@ const Quotations = () => {
 
   const createdBy = fullName || username || "";
 
+  // Compute status dynamically
+  const data = useMemo(() =>
+    rawData.map((q) => ({ ...q, status: getQuotationStatus(q.valid_until) })),
+    [rawData]
+  );
+
   // Auto-open record from navigation state
   useEffect(() => {
     if (location.state?.openRecordId && data.length > 0) {
@@ -42,12 +48,6 @@ const Quotations = () => {
       window.history.replaceState({}, "");
     }
   }, [location.state, data]);
-
-  // Compute status dynamically
-  const data = useMemo(() =>
-    rawData.map((q) => ({ ...q, status: getQuotationStatus(q.valid_until) })),
-    [rawData]
-  );
 
   const columns = [
     { key: "quotation_number", label: "Quotation #" },

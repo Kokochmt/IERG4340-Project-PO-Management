@@ -49,23 +49,11 @@ const PurchaseOrders = () => {
 
   const createdBy = fullName || username || "";
 
-  // Auto-open record from navigation state
-  useEffect(() => {
-    if (location.state?.openRecordId && data.length > 0) {
-      const record = data.find((r) => r.id === location.state.openRecordId);
-      if (record) setDetailRecord(record);
-      window.history.replaceState({}, "");
-    }
-  }, [location.state, data]);
-
   // Compute PO status dynamically
   const data = useMemo(() =>
     rawOrders.map((po) => {
-      // If rejected, keep rejected
       if (po.status === "rejected") return po;
-      // If pending (not yet reviewed), keep pending
       if (po.status === "pending" && !po.reviewed_at) return po;
-      // Check completion: total invoiced = PO amount AND total GR = PO amount
       const poAmount = Number(po.total_amount || 0);
       if (poAmount > 0 && (po.status === "approved" || po.status === "completed")) {
         const totalInvoiced = allInvoices
@@ -82,6 +70,15 @@ const PurchaseOrders = () => {
     }),
     [rawOrders, allInvoices, allGrns]
   );
+
+  // Auto-open record from navigation state
+  useEffect(() => {
+    if (location.state?.openRecordId && data.length > 0) {
+      const record = data.find((r) => r.id === location.state.openRecordId);
+      if (record) setDetailRecord(record);
+      window.history.replaceState({}, "");
+    }
+  }, [location.state, data]);
 
   useEffect(() => {
     if (selectedQuotationId) {

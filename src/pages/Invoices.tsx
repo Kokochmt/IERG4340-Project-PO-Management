@@ -36,16 +36,7 @@ const Invoices = () => {
 
   const createdBy = fullName || username || "";
 
-  // Auto-open record from navigation state
-  useEffect(() => {
-    if (location.state?.openRecordId && data.length > 0) {
-      const record = data.find((r) => r.id === location.state.openRecordId);
-      if (record) setDetailRecord(record);
-      window.history.replaceState({}, "");
-    }
-  }, [location.state, data]);
-
-  // Compute status: if linked PO and total invoiced + total GR both match PO amount => completed, else received
+  // Compute status
   const data = useMemo(() =>
     rawData.map((inv) => {
       if (inv.po_id) {
@@ -67,6 +58,15 @@ const Invoices = () => {
     }),
     [rawData, orders, allGrns]
   );
+
+  // Auto-open record from navigation state
+  useEffect(() => {
+    if (location.state?.openRecordId && data.length > 0) {
+      const record = data.find((r) => r.id === location.state.openRecordId);
+      if (record) setDetailRecord(record);
+      window.history.replaceState({}, "");
+    }
+  }, [location.state, data]);
 
   useEffect(() => {
     if (selectedPoId) {
