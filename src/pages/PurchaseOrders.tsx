@@ -186,7 +186,7 @@ const PurchaseOrders = () => {
       const a = document.createElement("a");
       a.href = url;
       const poRecord = rawOrders.find((o) => o.id === poId);
-      a.download = poRecord ? `${poRecord.po_number}.pdf` : `PO-${poId.slice(0, 8)}.pdf`;
+      a.download = poRecord ? `PO${poRecord.po_number}.pdf` : `PO-${poId.slice(0, 8)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success("PDF downloaded");

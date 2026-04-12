@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
         .single();
       if (error || !po) throw new Error("PO not found");
 
-      pdfFilename = `${po.po_number}.pdf`;
+      pdfFilename = `PO${po.po_number}.pdf`;
 
       let quotation = null;
       if (po.quotation_id) {
