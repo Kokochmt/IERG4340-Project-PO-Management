@@ -136,11 +136,14 @@ const PurchaseOrders = () => {
       key: "id",
       label: "PDF",
       sortable: false,
-      render: (_: any, row: any) => (
-        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); generatePdf(row.id); }}>
-          <FileDown className="h-4 w-4" />
-        </Button>
-      ),
+      render: (_: any, row: any) => {
+        const isPending = row.status === "pending" && !row.reviewed_at;
+        return (
+          <Button variant="ghost" size="sm" disabled={isPending} title={isPending ? "Cannot generate PDF while pending approval" : "Download PDF"} onClick={(e) => { e.stopPropagation(); if (!isPending) generatePdf(row.id); }}>
+            <FileDown className={`h-4 w-4 ${isPending ? "opacity-40" : ""}`} />
+          </Button>
+        );
+      },
     },
   ];
 
