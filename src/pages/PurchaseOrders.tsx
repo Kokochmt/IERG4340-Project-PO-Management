@@ -185,7 +185,7 @@ const PurchaseOrders = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const po = orders.find((o) => o.id === poId);
+      const po = data.find((o) => o.id === poId);
       a.download = po ? `${po.po_number}.pdf` : `PO-${poId.slice(0, 8)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
