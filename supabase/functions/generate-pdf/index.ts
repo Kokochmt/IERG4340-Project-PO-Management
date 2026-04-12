@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const COMPANY_NAME = "Procurement Development Company";
 const COMPANY_ADDRESS = "123 Business Street, City, Country";
+const LOGO_URL = Deno.env.get("SUPABASE_URL") + "/storage/v1/object/public/company-assets/logo.png";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
