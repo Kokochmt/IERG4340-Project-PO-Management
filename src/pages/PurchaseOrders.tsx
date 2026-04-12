@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, FileDown, CheckCircle, XCircle } from "lucide-react";
+import StatusBadge from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
