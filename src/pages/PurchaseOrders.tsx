@@ -113,20 +113,20 @@ const PurchaseOrders = () => {
       key: "status",
       label: "Status",
       render: (v: string, row: any) => {
-        const isPending = v === "pending";
+        const isPending = v === "pending" && !row.reviewed_at;
         return (
           <span
-            className={isPending && canApprove ? "cursor-pointer underline text-warning font-medium" : ""}
+            className={isPending && canApprove ? "cursor-pointer" : ""}
             onClick={(e) => {
               e.stopPropagation();
-              if (isPending && canApprove && !row.reviewed_at) {
+              if (isPending && canApprove) {
                 setReviewPO(row);
                 setReviewComment("");
                 setReviewOpen(true);
               }
             }}
           >
-            {v === "pending" ? "Pending Approval" : v === "completed" ? "Completed" : v === "approved" ? "Approved" : v === "rejected" ? "Rejected" : v}
+            <StatusBadge status={v} />
           </span>
         );
       },
