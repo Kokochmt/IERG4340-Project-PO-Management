@@ -145,7 +145,7 @@ const Dashboard = () => {
                   <div
                     key={po.id}
                     className="flex items-center justify-between py-2 border-b last:border-0 gap-2 cursor-pointer hover:bg-muted/50 rounded px-2 -mx-2"
-                    onClick={() => navigate("/purchase-orders")}
+                    onClick={() => navigate("/purchase-orders", { state: { openRecordId: po.id } })}
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{po.po_number}</p>
@@ -177,7 +177,7 @@ const Dashboard = () => {
                   <div
                     key={grn.id}
                     className="flex items-center justify-between py-2 border-b last:border-0 gap-2 cursor-pointer hover:bg-muted/50 rounded px-2 -mx-2"
-                    onClick={() => navigate("/goods-received")}
+                    onClick={() => navigate("/goods-received", { state: { openRecordId: grn.id } })}
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{grn.grn_number}</p>
