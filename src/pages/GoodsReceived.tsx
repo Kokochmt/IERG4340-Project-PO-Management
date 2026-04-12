@@ -208,7 +208,6 @@ const GoodsReceived = () => {
       remarks: result.data.remarks || null,
       file_url: fileUrl || null,
       po_id: result.data.po_id || null,
-      status: "received",
       created_by: fullName || username || "Unknown",
     } as any);
 
