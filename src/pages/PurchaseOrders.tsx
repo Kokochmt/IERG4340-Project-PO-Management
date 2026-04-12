@@ -104,6 +104,7 @@ const PurchaseOrders = () => {
 
   const columns = [
     { key: "po_number", label: "PO #" },
+    { key: "title", label: "Title" },
     { key: "vendor_name", label: "Vendor" },
     { key: "total_amount", label: "Total Amount", hideOnMobile: true, render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
     { key: "order_date", label: "Order Date", hideOnMobile: true },
