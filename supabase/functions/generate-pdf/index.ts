@@ -99,8 +99,8 @@ Deno.serve(async (req) => {
 
       if (po.title) addField("Title:", po.title);
       addField("Vendor:", po.vendor_name);
-      if (vendorCompany?.contact_person) addField("Contact Person:", vendorCompany.contact_person);
-      if (vendorCompany?.contact_email) addField("Contact Email:", vendorCompany.contact_email);
+      if (vendorCompany?.contact_person) addField("Vendor Contact Person:", vendorCompany.contact_person);
+      if (vendorCompany?.contact_email) addField("Vendor Contact Email:", vendorCompany.contact_email);
       addField("Amount:", `${po.currency || "HKD"} ${Number(po.total_amount || 0).toLocaleString()}`);
       addField("Order Date:", po.order_date || "—");
       addField("Expected Delivery:", po.expected_delivery || "—");
@@ -213,8 +213,8 @@ Deno.serve(async (req) => {
       };
 
       addField("Vendor:", grn.vendor_name);
-      if (vendorCompany?.contact_person) addField("Contact Person:", vendorCompany.contact_person);
-      if (vendorCompany?.contact_email) addField("Contact Email:", vendorCompany.contact_email);
+      if (vendorCompany?.contact_person) addField("Vendor Contact Person:", vendorCompany.contact_person);
+      if (vendorCompany?.contact_email) addField("Vendor Contact Email:", vendorCompany.contact_email);
       addField("Received Date:", grn.received_date || "—");
       addField("Received By:", grn.received_by || grn.created_by || "—");
       addField("Amount Received:", `${grn.currency || "HKD"} ${Number(grn.total_amount || 0).toLocaleString()}`);
