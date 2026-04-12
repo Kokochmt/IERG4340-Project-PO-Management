@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ const Quotations = () => {
   const { data: rawData = [], isLoading } = useQuotations();
   const queryClient = useQueryClient();
   const { canEdit, isAdmin, fullName, username } = useAuth();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
   const [detailRecord, setDetailRecord] = useState<any>(null);
@@ -37,6 +39,15 @@ const Quotations = () => {
     rawData.map((q) => ({ ...q, status: getQuotationStatus(q.valid_until) })),
     [rawData]
   );
+
+  // Auto-open record from navigation state
+  useEffect(() => {
+    if (location.state?.openRecordId && data.length > 0) {
+      const record = data.find((r) => r.id === location.state.openRecordId);
+      if (record) setDetailRecord(record);
+      window.history.replaceState({}, "");
+    }
+  }, [location.state, data]);
 
   const columns = [
     { key: "quotation_number", label: "Quotation #" },

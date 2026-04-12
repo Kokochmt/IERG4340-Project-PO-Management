@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,8 @@ const GoodsReceived = () => {
   const { data: allInvoices = [] } = useInvoices();
   const queryClient = useQueryClient();
   const { canEdit, isAdmin, fullName, username } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
   const [detailRecord, setDetailRecord] = useState<any>(null);
@@ -56,6 +59,15 @@ const GoodsReceived = () => {
     }),
     [rawData, orders, allInvoices]
   );
+
+  // Auto-open record from navigation state
+  useEffect(() => {
+    if (location.state?.openRecordId && data.length > 0) {
+      const record = data.find((r) => r.id === location.state.openRecordId);
+      if (record) setDetailRecord(record);
+      window.history.replaceState({}, "");
+    }
+  }, [location.state, data]);
 
   useEffect(() => {
     if (selectedPoId) {
@@ -120,7 +132,7 @@ const GoodsReceived = () => {
     { key: "po_id", label: "Linked PO", render: (v: string) => {
       const po = getLinkedPO(v);
       if (!po) return "—";
-      return <span className="text-primary underline cursor-pointer">{po.po_number} - {po.vendor_name}</span>;
+      return <span className="text-primary underline cursor-pointer" onClick={() => { setDetailRecord(null); navigate("/purchase-orders", { state: { openRecordId: po.id } }); }}>{po.po_number} - {po.vendor_name}</span>;
     }},
     { key: "notes", label: "Notes" },
     { key: "remarks", label: "Remarks" },

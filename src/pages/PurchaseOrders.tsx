@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, FileDown, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,8 @@ const PurchaseOrders = () => {
   const { data: allGrns = [] } = useGoodsReceived();
   const queryClient = useQueryClient();
   const { canEdit, canApprove, isAdmin, fullName, username } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -49,11 +52,8 @@ const PurchaseOrders = () => {
   // Compute PO status dynamically
   const data = useMemo(() =>
     rawOrders.map((po) => {
-      // If rejected, keep rejected
       if (po.status === "rejected") return po;
-      // If pending (not yet reviewed), keep pending
       if (po.status === "pending" && !po.reviewed_at) return po;
-      // Check completion: total invoiced = PO amount AND total GR = PO amount
       const poAmount = Number(po.total_amount || 0);
       if (poAmount > 0 && (po.status === "approved" || po.status === "completed")) {
         const totalInvoiced = allInvoices
@@ -70,6 +70,15 @@ const PurchaseOrders = () => {
     }),
     [rawOrders, allInvoices, allGrns]
   );
+
+  // Auto-open record from navigation state
+  useEffect(() => {
+    if (location.state?.openRecordId && data.length > 0) {
+      const record = data.find((r) => r.id === location.state.openRecordId);
+      if (record) setDetailRecord(record);
+      window.history.replaceState({}, "");
+    }
+  }, [location.state, data]);
 
   useEffect(() => {
     if (selectedQuotationId) {
@@ -151,7 +160,7 @@ const PurchaseOrders = () => {
     { key: "quotation_id", label: "Linked Quotation", render: (v: string) => {
       const q = getLinkedQuotation(v);
       if (!q) return "—";
-      return <span className="text-primary underline cursor-pointer" onClick={() => setDetailRecord(null)}>{q.quotation_number} - {q.vendor_name}</span>;
+      return <span className="text-primary underline cursor-pointer" onClick={() => { setDetailRecord(null); navigate("/quotations", { state: { openRecordId: q.id } }); }}>{q.quotation_number} - {q.vendor_name}</span>;
     }},
     { key: "status", label: "Status" },
     { key: "created_by", label: "Created By" },
