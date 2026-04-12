@@ -222,6 +222,17 @@ Deno.serve(async (req) => {
         page.drawText(grn.remarks.slice(0, 500), { x: left, y, font, size: 9 });
       }
 
+      // Add logo signature at the bottom
+      if (logoImage) {
+        const logoScale = 80 / logoImage.width;
+        const logoW = logoImage.width * logoScale;
+        const logoH = logoImage.height * logoScale;
+        y -= 30;
+        page.drawLine({ start: { x: left, y: y + 10 }, end: { x: 545, y: y + 10 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
+        page.drawImage(logoImage, { x: 545 - logoW, y: y - logoH, width: logoW, height: logoH });
+        page.drawText("Authorized Signature", { x: 545 - logoW - 10 - fontBold.widthOfTextAtSize("Authorized Signature", 8), y: y - logoH / 2 - 4, font: fontBold, size: 8, color: rgb(0.4, 0.4, 0.4) });
+      }
+
     } else {
       return new Response(JSON.stringify({ error: "Invalid type. Use 'po' or 'grn'" }), {
         status: 400,
