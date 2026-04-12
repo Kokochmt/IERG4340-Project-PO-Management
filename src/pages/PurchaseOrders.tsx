@@ -160,7 +160,7 @@ const PurchaseOrders = () => {
     { key: "quotation_id", label: "Linked Quotation", render: (v: string) => {
       const q = getLinkedQuotation(v);
       if (!q) return "—";
-      return <span className="text-primary underline cursor-pointer" onClick={() => setDetailRecord(null)}>{q.quotation_number} - {q.vendor_name}</span>;
+      return <span className="text-primary underline cursor-pointer" onClick={() => { setDetailRecord(null); navigate("/quotations", { state: { openRecordId: q.id } }); }}>{q.quotation_number} - {q.vendor_name}</span>;
     }},
     { key: "status", label: "Status" },
     { key: "created_by", label: "Created By" },

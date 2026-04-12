@@ -117,7 +117,7 @@ const Invoices = () => {
     { key: "po_id", label: "Linked PO", render: (v: string) => {
       const po = getLinkedPO(v);
       if (!po) return "—";
-      return <span className="text-primary underline cursor-pointer">{po.po_number} - {po.vendor_name}</span>;
+      return <span className="text-primary underline cursor-pointer" onClick={() => { setDetailRecord(null); navigate("/purchase-orders", { state: { openRecordId: po.id } }); }}>{po.po_number} - {po.vendor_name}</span>;
     }},
     { key: "notes", label: "Notes" },
     { key: "remarks", label: "Remarks" },
