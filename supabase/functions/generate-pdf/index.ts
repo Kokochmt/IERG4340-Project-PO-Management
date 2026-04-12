@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
         page.drawText("Authorized Signature", { x: 545 - logoW - 10 - fontBold.widthOfTextAtSize("Authorized Signature", 8), y: y - logoH / 2 - 4, font: fontBold, size: 8, color: rgb(0.4, 0.4, 0.4) });
       }
 
-
+    } else if (type === "grn") {
       const { data: grn, error } = await supabase
         .from("goods_received")
         .select("*")
