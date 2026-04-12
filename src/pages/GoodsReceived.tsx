@@ -153,8 +153,8 @@ const GoodsReceived = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const grn = data.find((r) => r.id === grnId);
-      a.download = grn ? `${grn.grn_number}.pdf` : `GRN-${grnId.slice(0, 8)}.pdf`;
+      const grnRecord = rawData.find((r) => r.id === grnId);
+      a.download = grnRecord ? `${grnRecord.grn_number}.pdf` : `GRN-${grnId.slice(0, 8)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success("PDF downloaded");
