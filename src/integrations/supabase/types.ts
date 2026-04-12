@@ -246,6 +246,7 @@ export type Database = {
           reviewed_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["record_status"] | null
+          title: string | null
           total_amount: number | null
           updated_at: string
           vendor_name: string
@@ -270,6 +271,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
+          title?: string | null
           total_amount?: number | null
           updated_at?: string
           vendor_name: string
@@ -294,6 +296,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["record_status"] | null
+          title?: string | null
           total_amount?: number | null
           updated_at?: string
           vendor_name?: string

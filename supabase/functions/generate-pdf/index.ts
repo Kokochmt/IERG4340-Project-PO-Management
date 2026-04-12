@@ -6,6 +6,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const COMPANY_NAME = "Procurement Development Company";
+const COMPANY_ADDRESS = "123 Business Street, City, Country";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -37,13 +40,7 @@ Deno.serve(async (req) => {
         .single();
       if (error || !po) throw new Error("PO not found");
 
-      // Fetch linked request/quotation
-      let request = null;
       let quotation = null;
-      if (po.request_id) {
-        const { data } = await supabase.from("purchase_requests").select("*").eq("id", po.request_id).single();
-        request = data;
-      }
       if (po.quotation_id) {
         const { data } = await supabase.from("quotations").select("*").eq("id", po.quotation_id).single();
         quotation = data;
@@ -53,15 +50,18 @@ Deno.serve(async (req) => {
       let y = 790;
       const left = 50;
 
-      // Header
+      // Header - Company name left, PO number top right
       page.drawText("PURCHASE ORDER", { x: left, y, font: fontBold, size: 20, color: rgb(0.07, 0.47, 0.43) });
+      // PO Number at top right
+      const poNumText = `PO #: ${po.po_number}`;
+      const poNumWidth = fontBold.widthOfTextAtSize(poNumText, 12);
+      page.drawText(poNumText, { x: 545 - poNumWidth, y, font: fontBold, size: 12 });
       y -= 30;
-      page.drawText("Your Company Name", { x: left, y, font: fontBold, size: 12 });
+      page.drawText(COMPANY_NAME, { x: left, y, font: fontBold, size: 12 });
       y -= 15;
-      page.drawText("123 Business Street, City, Country", { x: left, y, font, size: 9, color: rgb(0.4, 0.4, 0.4) });
+      page.drawText(COMPANY_ADDRESS, { x: left, y, font, size: 9, color: rgb(0.4, 0.4, 0.4) });
       y -= 30;
 
-      // PO details
       page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
       y -= 5;
 
@@ -71,20 +71,20 @@ Deno.serve(async (req) => {
         y -= 18;
       };
 
-      addField("PO Number:", po.po_number);
+      if (po.title) addField("Title:", po.title);
       addField("Vendor:", po.vendor_name);
       addField("Amount:", `${po.currency || "HKD"} ${Number(po.total_amount || 0).toLocaleString()}`);
       addField("Order Date:", po.order_date || "—");
       addField("Expected Delivery:", po.expected_delivery || "—");
-      addField("Status:", (po.status || "draft").toUpperCase());
-      addField("Delivery Location:", po.delivery_location || "—");
+      // Delivery location defaults to company address if not specified
+      const deliveryLoc = po.delivery_location || COMPANY_ADDRESS;
+      addField("Delivery Location:", deliveryLoc);
       addField("Quantity:", po.quantity ? String(po.quantity) : "—");
 
       y -= 10;
       if (po.goods_description) {
         page.drawText("Goods Description:", { x: left, y, font: fontBold, size: 10 });
         y -= 16;
-        // Word wrap description
         const words = po.goods_description.split(" ");
         let line = "";
         for (const word of words) {
@@ -99,27 +99,15 @@ Deno.serve(async (req) => {
         if (line) { page.drawText(line, { x: left, y, font, size: 9 }); y -= 14; }
       }
 
-      // Linked records
-      if (request) {
-        y -= 15;
-        page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
-        y -= 5;
-        page.drawText("LINKED REQUEST", { x: left, y, font: fontBold, size: 11, color: rgb(0.07, 0.47, 0.43) });
-        y -= 18;
-        addField("Request #:", request.request_number);
-        addField("Title:", request.title);
-        addField("Requester:", request.requester_name);
-        addField("Department:", request.department || "—");
-      }
-
+      // Linked quotation
       if (quotation) {
         y -= 15;
         page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
         y -= 5;
-        page.drawText("LINKED QUOTATION", { x: left, y, font: fontBold, size: 11, color: rgb(0.07, 0.47, 0.43) });
+        page.drawText("Regarding to the following Quotation", { x: left, y, font: fontBold, size: 11, color: rgb(0.07, 0.47, 0.43) });
         y -= 18;
         addField("Quotation #:", quotation.quotation_number);
-        addField("Vendor:", quotation.vendor_name);
+        if (quotation.title) addField("Title:", quotation.title);
         addField("Amount:", `${quotation.currency || "HKD"} ${Number(quotation.total_amount || 0).toLocaleString()}`);
       }
 
@@ -155,9 +143,9 @@ Deno.serve(async (req) => {
 
       page.drawText("GOODS RECEIVED NOTE", { x: left, y, font: fontBold, size: 20, color: rgb(0.07, 0.47, 0.43) });
       y -= 30;
-      page.drawText("Your Company Name", { x: left, y, font: fontBold, size: 12 });
+      page.drawText(COMPANY_NAME, { x: left, y, font: fontBold, size: 12 });
       y -= 15;
-      page.drawText("123 Business Street, City, Country", { x: left, y, font, size: 9, color: rgb(0.4, 0.4, 0.4) });
+      page.drawText(COMPANY_ADDRESS, { x: left, y, font, size: 9, color: rgb(0.4, 0.4, 0.4) });
       y -= 30;
 
       page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
