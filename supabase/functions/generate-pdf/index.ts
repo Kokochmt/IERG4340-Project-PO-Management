@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
         .single();
       if (error || !grn) throw new Error("GRN not found");
 
-      pdfFilename = `${grn.grn_number}.pdf`;
+      pdfFilename = `GRN${grn.grn_number}.pdf`;
 
       let po = null;
       let invoice = null;
