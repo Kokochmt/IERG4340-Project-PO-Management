@@ -55,6 +55,17 @@ Deno.serve(async (req) => {
         .single();
       if (error || !po) throw new Error("PO not found");
 
+      // Lookup vendor contact from companies table
+      let vendorCompany = null;
+      if (po.vendor_name) {
+        const { data: companyData } = await supabase
+          .from("companies")
+          .select("*")
+          .eq("company_name", po.vendor_name)
+          .single();
+        vendorCompany = companyData;
+      }
+
       pdfFilename = `PO${po.po_number}.pdf`;
 
       let quotation = null;
@@ -88,6 +99,8 @@ Deno.serve(async (req) => {
 
       if (po.title) addField("Title:", po.title);
       addField("Vendor:", po.vendor_name);
+      if (vendorCompany?.contact_person) addField("Contact Person:", vendorCompany.contact_person);
+      if (vendorCompany?.contact_email) addField("Contact Email:", vendorCompany.contact_email);
       addField("Amount:", `${po.currency || "HKD"} ${Number(po.total_amount || 0).toLocaleString()}`);
       addField("Order Date:", po.order_date || "—");
       addField("Expected Delivery:", po.expected_delivery || "—");
@@ -152,6 +165,17 @@ Deno.serve(async (req) => {
         .single();
       if (error || !grn) throw new Error("GRN not found");
 
+      // Lookup vendor contact from companies table
+      let vendorCompany = null;
+      if (grn.vendor_name) {
+        const { data: companyData } = await supabase
+          .from("companies")
+          .select("*")
+          .eq("company_name", grn.vendor_name)
+          .single();
+        vendorCompany = companyData;
+      }
+
       pdfFilename = `GRN${grn.grn_number}.pdf`;
 
       let po = null;
@@ -189,6 +213,8 @@ Deno.serve(async (req) => {
       };
 
       addField("Vendor:", grn.vendor_name);
+      if (vendorCompany?.contact_person) addField("Contact Person:", vendorCompany.contact_person);
+      if (vendorCompany?.contact_email) addField("Contact Email:", vendorCompany.contact_email);
       addField("Received Date:", grn.received_date || "—");
       addField("Received By:", grn.received_by || grn.created_by || "—");
       addField("Amount Received:", `${grn.currency || "HKD"} ${Number(grn.total_amount || 0).toLocaleString()}`);
