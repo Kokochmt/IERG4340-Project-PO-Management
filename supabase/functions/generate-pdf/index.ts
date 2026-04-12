@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
 
       // Add logo signature at the bottom
       if (logoImage) {
-        const logoScale = 80 / logoImage.width;
+        const logoScale = 120 / logoImage.width;
         const logoW = logoImage.width * logoScale;
         const logoH = logoImage.height * logoScale;
         y -= 30;
@@ -224,7 +224,7 @@ Deno.serve(async (req) => {
 
       // Add logo signature at the bottom
       if (logoImage) {
-        const logoScale = 80 / logoImage.width;
+        const logoScale = 120 / logoImage.width;
         const logoW = logoImage.width * logoScale;
         const logoH = logoImage.height * logoScale;
         y -= 30;
