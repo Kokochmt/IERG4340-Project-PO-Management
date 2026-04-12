@@ -154,7 +154,7 @@ const GoodsReceived = () => {
       const a = document.createElement("a");
       a.href = url;
       const grnRecord = rawData.find((r) => r.id === grnId);
-      a.download = grnRecord ? `${grnRecord.grn_number}.pdf` : `GRN-${grnId.slice(0, 8)}.pdf`;
+      a.download = grnRecord ? `GRN${grnRecord.grn_number}.pdf` : `GRN-${grnId.slice(0, 8)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success("PDF downloaded");
