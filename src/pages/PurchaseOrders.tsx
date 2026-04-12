@@ -151,6 +151,7 @@ const PurchaseOrders = () => {
 
   const detailFields = [
     { key: "po_number", label: "PO #" },
+    { key: "title", label: "Title" },
     { key: "vendor_name", label: "Vendor" },
     { key: "total_amount", label: "Total Amount", render: (v: number, row: any) => `${row.currency || "HKD"} ${Number(v || 0).toLocaleString()}` },
     { key: "order_date", label: "Order Date" },
@@ -251,6 +252,7 @@ const PurchaseOrders = () => {
     const num = `3${seq}`;
     const { error } = await supabase.from("purchase_orders").insert({
       po_number: num,
+      title: (raw as any).title || null,
       vendor_name: result.data.vendor_name,
       total_amount: result.data.total_amount,
       currency: result.data.currency,
@@ -335,6 +337,7 @@ const PurchaseOrders = () => {
                   <div><Label>Order Date</Label><Input name="order_date" type="date" /></div>
                   <div><Label>Expected Delivery</Label><Input name="expected_delivery" type="date" /></div>
                 </div>
+                <div><Label>Title</Label><Input name="title" maxLength={500} placeholder="PO title/subject" /></div>
                 <div><Label>Delivery Location</Label><Input name="delivery_location" maxLength={500} /></div>
                 <div><Label>Goods Description</Label><Textarea name="goods_description" maxLength={2000} /></div>
                 <div><Label>Notes</Label><Textarea name="notes" maxLength={2000} /></div>
