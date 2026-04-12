@@ -54,6 +54,12 @@ Deno.serve(async (req) => {
         .eq("id", id)
         .single();
       if (error || !po) throw new Error("PO not found");
+      if (po.status === "pending" && !po.reviewed_at) {
+        return new Response(JSON.stringify({ error: "Cannot generate PDF for a PO pending approval" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
       // Lookup vendor contact from companies table
       let vendorCompany = null;
