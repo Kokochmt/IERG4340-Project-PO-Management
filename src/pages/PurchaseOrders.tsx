@@ -33,6 +33,8 @@ const PurchaseOrders = () => {
   const { data: allGrns = [] } = useGoodsReceived();
   const queryClient = useQueryClient();
   const { canEdit, canApprove, isAdmin, fullName, username } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
   const [reviewOpen, setReviewOpen] = useState(false);

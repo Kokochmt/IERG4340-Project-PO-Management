@@ -24,6 +24,8 @@ const Invoices = () => {
   const { data: allGrns = [] } = useGoodsReceived();
   const queryClient = useQueryClient();
   const { canEdit, isAdmin, fullName, username } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
   const [detailRecord, setDetailRecord] = useState<any>(null);
