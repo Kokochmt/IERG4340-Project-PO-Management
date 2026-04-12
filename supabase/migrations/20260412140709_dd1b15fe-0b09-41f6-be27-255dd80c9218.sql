@@ -1,0 +1,1 @@
+INSERT INTO public.profiles (id) SELECT NULL WHERE FALSE;
