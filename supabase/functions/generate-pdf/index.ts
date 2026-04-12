@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const COMPANY_NAME = "Procurement Development Company";
 const COMPANY_ADDRESS = "123 Business Street, City, Country";
+const LOGO_URL = Deno.env.get("SUPABASE_URL") + "/storage/v1/object/public/company-assets/logo.png";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -31,6 +32,18 @@ Deno.serve(async (req) => {
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // Fetch and embed company logo
+    let logoImage = null;
+    try {
+      const logoRes = await fetch(LOGO_URL);
+      if (logoRes.ok) {
+        const logoBytes = new Uint8Array(await logoRes.arrayBuffer());
+        logoImage = await pdfDoc.embedPng(logoBytes);
+      }
+    } catch (e) {
+      console.error("Failed to load logo:", e);
+    }
 
     let pdfFilename = `${type}-${id}.pdf`;
 
@@ -120,7 +133,18 @@ Deno.serve(async (req) => {
         page.drawText(po.remarks.slice(0, 500), { x: left, y, font, size: 9 });
       }
 
-    } else if (type === "grn") {
+      // Add logo signature at the bottom
+      if (logoImage) {
+        const logoScale = 80 / logoImage.width;
+        const logoW = logoImage.width * logoScale;
+        const logoH = logoImage.height * logoScale;
+        y -= 30;
+        page.drawLine({ start: { x: left, y: y + 10 }, end: { x: 545, y: y + 10 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
+        page.drawImage(logoImage, { x: 545 - logoW, y: y - logoH, width: logoW, height: logoH });
+        page.drawText("Authorized Signature", { x: 545 - logoW - 10 - fontBold.widthOfTextAtSize("Authorized Signature", 8), y: y - logoH / 2 - 4, font: fontBold, size: 8, color: rgb(0.4, 0.4, 0.4) });
+      }
+
+
       const { data: grn, error } = await supabase
         .from("goods_received")
         .select("*")
@@ -196,6 +220,17 @@ Deno.serve(async (req) => {
         page.drawText("Remarks:", { x: left, y, font: fontBold, size: 10 });
         y -= 16;
         page.drawText(grn.remarks.slice(0, 500), { x: left, y, font, size: 9 });
+      }
+
+      // Add logo signature at the bottom
+      if (logoImage) {
+        const logoScale = 80 / logoImage.width;
+        const logoW = logoImage.width * logoScale;
+        const logoH = logoImage.height * logoScale;
+        y -= 30;
+        page.drawLine({ start: { x: left, y: y + 10 }, end: { x: 545, y: y + 10 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
+        page.drawImage(logoImage, { x: 545 - logoW, y: y - logoH, width: logoW, height: logoH });
+        page.drawText("Authorized Signature", { x: 545 - logoW - 10 - fontBold.widthOfTextAtSize("Authorized Signature", 8), y: y - logoH / 2 - 4, font: fontBold, size: 8, color: rgb(0.4, 0.4, 0.4) });
       }
 
     } else {
