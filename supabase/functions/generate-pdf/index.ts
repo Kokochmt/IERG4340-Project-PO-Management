@@ -32,6 +32,8 @@ Deno.serve(async (req) => {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
+    let pdfFilename = `${type}-${id}.pdf`;
+
     if (type === "po") {
       const { data: po, error } = await supabase
         .from("purchase_orders")
@@ -40,19 +42,19 @@ Deno.serve(async (req) => {
         .single();
       if (error || !po) throw new Error("PO not found");
 
+      pdfFilename = `${po.po_number}.pdf`;
+
       let quotation = null;
       if (po.quotation_id) {
         const { data } = await supabase.from("quotations").select("*").eq("id", po.quotation_id).single();
         quotation = data;
       }
 
-      const page = pdfDoc.addPage([595, 842]); // A4
+      const page = pdfDoc.addPage([595, 842]);
       let y = 790;
       const left = 50;
 
-      // Header - Company name left, PO number top right
       page.drawText("PURCHASE ORDER", { x: left, y, font: fontBold, size: 20, color: rgb(0.07, 0.47, 0.43) });
-      // PO Number at top right
       const poNumText = `PO #: ${po.po_number}`;
       const poNumWidth = fontBold.widthOfTextAtSize(poNumText, 12);
       page.drawText(poNumText, { x: 545 - poNumWidth, y, font: fontBold, size: 12 });
@@ -76,7 +78,6 @@ Deno.serve(async (req) => {
       addField("Amount:", `${po.currency || "HKD"} ${Number(po.total_amount || 0).toLocaleString()}`);
       addField("Order Date:", po.order_date || "—");
       addField("Expected Delivery:", po.expected_delivery || "—");
-      // Delivery location defaults to company address if not specified
       const deliveryLoc = po.delivery_location || COMPANY_ADDRESS;
       addField("Delivery Location:", deliveryLoc);
       addField("Quantity:", po.quantity ? String(po.quantity) : "—");
@@ -99,7 +100,6 @@ Deno.serve(async (req) => {
         if (line) { page.drawText(line, { x: left, y, font, size: 9 }); y -= 14; }
       }
 
-      // Linked quotation
       if (quotation) {
         y -= 15;
         page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
@@ -109,6 +109,8 @@ Deno.serve(async (req) => {
         addField("Quotation #:", quotation.quotation_number);
         if (quotation.title) addField("Title:", quotation.title);
         addField("Amount:", `${quotation.currency || "HKD"} ${Number(quotation.total_amount || 0).toLocaleString()}`);
+        const qCreatedDate = quotation.created_at ? new Date(quotation.created_at).toLocaleDateString() : "—";
+        addField("Date:", qCreatedDate);
       }
 
       if (po.remarks) {
@@ -126,6 +128,8 @@ Deno.serve(async (req) => {
         .single();
       if (error || !grn) throw new Error("GRN not found");
 
+      pdfFilename = `${grn.grn_number}.pdf`;
+
       let po = null;
       let invoice = null;
       if (grn.po_id) {
@@ -142,6 +146,9 @@ Deno.serve(async (req) => {
       const left = 50;
 
       page.drawText("GOODS RECEIVED NOTE", { x: left, y, font: fontBold, size: 20, color: rgb(0.07, 0.47, 0.43) });
+      const grnNumText = `GRN #: ${grn.grn_number}`;
+      const grnNumWidth = fontBold.widthOfTextAtSize(grnNumText, 12);
+      page.drawText(grnNumText, { x: 545 - grnNumWidth, y, font: fontBold, size: 12 });
       y -= 30;
       page.drawText(COMPANY_NAME, { x: left, y, font: fontBold, size: 12 });
       y -= 15;
@@ -157,24 +164,21 @@ Deno.serve(async (req) => {
         y -= 18;
       };
 
-      addField("GRN Number:", grn.grn_number);
       addField("Vendor:", grn.vendor_name);
       addField("Received Date:", grn.received_date || "—");
-      addField("Received By:", grn.received_by || "—");
-      addField("Quantity Received:", grn.quantity_received ? String(grn.quantity_received) : "—");
-      addField("Status:", (grn.status || "pending").toUpperCase());
+      addField("Received By:", grn.received_by || grn.created_by || "—");
+      addField("Amount Received:", `${grn.currency || "HKD"} ${Number(grn.total_amount || 0).toLocaleString()}`);
 
       if (po) {
         y -= 15;
         page.drawLine({ start: { x: left, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
         y -= 5;
-        page.drawText("LINKED PURCHASE ORDER", { x: left, y, font: fontBold, size: 11, color: rgb(0.07, 0.47, 0.43) });
+        page.drawText("Regarding to the following Purchase Order", { x: left, y, font: fontBold, size: 11, color: rgb(0.07, 0.47, 0.43) });
         y -= 18;
         addField("PO #:", po.po_number);
-        addField("Vendor:", po.vendor_name);
+        if (po.title) addField("Title:", po.title);
         addField("Amount:", `${po.currency || "HKD"} ${Number(po.total_amount || 0).toLocaleString()}`);
-        addField("Goods:", po.goods_description || "—");
-        addField("Delivery Location:", po.delivery_location || "—");
+        if (po.goods_description) addField("Goods:", po.goods_description);
       }
 
       if (invoice) {
@@ -206,7 +210,7 @@ Deno.serve(async (req) => {
       headers: {
         ...corsHeaders,
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${type}-${id}.pdf"`,
+        "Content-Disposition": `attachment; filename="${pdfFilename}"`,
       },
     });
 

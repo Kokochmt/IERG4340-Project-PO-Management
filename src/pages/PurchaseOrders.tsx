@@ -185,7 +185,8 @@ const PurchaseOrders = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `PO-${poId.slice(0, 8)}.pdf`;
+      const po = orders.find((o) => o.id === poId);
+      a.download = po ? `${po.po_number}.pdf` : `PO-${poId.slice(0, 8)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success("PDF downloaded");

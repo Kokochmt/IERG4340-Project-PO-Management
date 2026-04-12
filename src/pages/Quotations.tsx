@@ -69,7 +69,7 @@ const Quotations = () => {
     { key: "remarks", label: "Remarks" },
     { key: "status", label: "Status" },
     { key: "created_by", label: "Created By" },
-    { key: "created_at", label: "Created At", render: (v: string) => v ? new Date(v).toLocaleString() : "—" },
+    { key: "created_at", label: "Created At", render: (v: string) => v ? new Date(v).toLocaleDateString() : "—" },
     { key: "file_url", label: "Attachment", render: (v: string) => v ? <a href={v} target="_blank" rel="noopener noreferrer" className="text-primary underline">View File</a> : "—" },
   ];
 
