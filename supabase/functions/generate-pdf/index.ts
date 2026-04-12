@@ -33,6 +33,18 @@ Deno.serve(async (req) => {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
+    // Fetch and embed company logo
+    let logoImage = null;
+    try {
+      const logoRes = await fetch(LOGO_URL);
+      if (logoRes.ok) {
+        const logoBytes = new Uint8Array(await logoRes.arrayBuffer());
+        logoImage = await pdfDoc.embedPng(logoBytes);
+      }
+    } catch (e) {
+      console.error("Failed to load logo:", e);
+    }
+
     let pdfFilename = `${type}-${id}.pdf`;
 
     if (type === "po") {
